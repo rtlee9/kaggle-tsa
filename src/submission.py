@@ -4,15 +4,16 @@ import numpy as np
 import tsahelper.tsahelper as tsa
 
 from .model import alexnet
-from .constants import INPUT_FOLDER, IMAGE_DIM, MODEL_NAME, LEARNING_RATE
+from .constants import INPUT_FOLDER, IMAGE_DIM, MODEL_DESCRIPTION, LEARNING_RATE
 from . import config
 
 
 def preprocess_subject_image_tz(subject, tz_num):
     images = tsa.read_data(path.join(INPUT_FOLDER, subject + '.aps'))
     images = images.transpose()
-    threat_zone = tsa.zone_slice_list[tz_num]
-    crop_dims = tsa.zone_crop_list[tz_num]
+    tz_idx = tz_num - 1
+    threat_zone = tsa.zone_slice_list[tz_idx]
+    crop_dims = tsa.zone_crop_list[tz_idx]
     return [preprocess_image(img, threat_zone[i], crop_dims[i]) for i, img in enumerate(images) if threat_zone[i] is not None]
 
 
@@ -34,30 +35,36 @@ def get_pred(model, subject_id, zone_num):
 
 
 def generate_submissions():
-    # load model from disk
-    model = alexnet(IMAGE_DIM, IMAGE_DIM, LEARNING_RATE)
-    model.load(path.join(config.path_model, MODEL_NAME + '.pk'))
 
     # load submissions data from disk
     submissions_df = pd.read_csv(path.join('data', 'stage1_sample_submission.csv'))
     submissions_df['subject_id'] = submissions_df.Id.str.split('_').str[0]
     submissions_df['zone_num'] = submissions_df.Id.str.split('Zone').str[1].astype(int)
-    submissions_df['zone_idx'] = submissions_df.zone_num - 1
 
-    # sanity check
-    sample_id = 0
-    subject = submissions_df.iloc[sample_id]
-    sample_subject_id = subject.subject_id
-    sample_zone_num = subject.zone_num
-    sample_pred = get_pred(model, sample_subject_id, sample_zone_num)
-    assert sample_pred > 0
-    assert sample_pred < 1
+    preds = {}
+    for threat_zone in submissions_df.zone_num.unique():
+        df = submissions_df[submissions_df.zone_num == threat_zone]
 
-    # generate prediction as mean across all images for a given subject
-    submissions_df['Probability'] = submissions_df.apply(lambda row: get_pred(model, row['subject_id'], row['zone_idx']), axis=1)
+        # load model from disk
+        model_name = '{}-tz-{}'.format(MODEL_DESCRIPTION, threat_zone)
+        model = alexnet(IMAGE_DIM, IMAGE_DIM, LEARNING_RATE)
+        model.load(path.join(config.path_model, model_name + '.pk'))
 
-    # write predictions to disk
-    submissions_df[['Id', 'Probability']].to_csv(path.join(config.path_submissions, MODEL_NAME + '.csv'), index=False)
+        # sanity check
+        sample_id = 0
+        subject = df.iloc[sample_id]
+        sample_subject_id = subject.subject_id
+        sample_zone_num = subject.zone_num
+        sample_pred = get_pred(model, sample_subject_id, sample_zone_num)
+        assert sample_pred > 0
+        assert sample_pred < 1
+
+        # generate prediction
+        preds[df.Id] = get_pred(model, df.subject_id, threat_zone)
+
+    # collect predictions and write to disk
+    predictions_df = pd.Series(preds, name='Probability')
+    predictions_df.to_csv(path.join(config.path_submissions, MODEL_DESCRIPTION + '.csv'), header=True, index_label='Id')
 
 
 if __name__ == '__main__':
