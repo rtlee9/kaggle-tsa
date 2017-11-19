@@ -56,7 +56,7 @@ def generate_submissions():
     submissions_df['Probability'] = submissions_df.apply(lambda row: get_pred(model, row['subject_id'], row['zone_idx']), axis=1)
 
     # write predictions to disk
-    submissions_df[['Id', 'Probability']].to_csv(path.join(config.path_output, MODEL_NAME + '.csv'), index=False)
+    submissions_df[['Id', 'Probability']].to_csv(path.join(config.path_submissions, MODEL_NAME + '.csv'), index=False)
 
 
 if __name__ == '__main__':
