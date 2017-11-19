@@ -5,16 +5,13 @@ import numpy as np
 from .train_test_split import get_train_test_file_list
 from .model import alexnet
 from .input_pipeline import input_pipeline
-from .constants import PREPROCESSED_DATA_FOLDER, IMAGE_DIM, LEARNING_RATE, N_TRAIN_STEPS, MODEL_NAME, verbose
+from .constants import PREPROCESSED_DATA_FOLDER, IMAGE_DIM, LEARNING_RATE, N_TRAIN_STEPS, MODEL_DESCRIPTION, verbose
 from . import config
 
 
 def train_conv_net(threat_zone):
 
-    # hack: append threat_zone to global MODEL_NAME
-    global MODEL_NAME
-    MODEL_NAME += '-tz-{}'.format(threat_zone)
-
+    model_name = '{}-tz-{}'.format(MODEL_DESCRIPTION, threat_zone)
     val_features = []
     val_labels = []
 
@@ -22,7 +19,7 @@ def train_conv_net(threat_zone):
     file_list, train_set_file_list, test_set_file_list = get_train_test_file_list(threat_zone)
 
     # instantiate model
-    model = alexnet(IMAGE_DIM, IMAGE_DIM, LEARNING_RATE)
+    model = alexnet(IMAGE_DIM, IMAGE_DIM, LEARNING_RATE, model_name)
 
     # read in the validation test set
     for j, test_f_in in enumerate(test_set_file_list):
