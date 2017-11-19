@@ -1,3 +1,4 @@
+from os import path
 import tflearn
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.core import input_data, dropout, fully_connected
@@ -28,7 +29,7 @@ def alexnet(width, height, lr):
     network = regression(network, optimizer='momentum', loss='categorical_crossentropy',
                          learning_rate=lr, name='labels')
 
-    model = tflearn.DNN(network, checkpoint_path=MODEL_PATH + MODEL_NAME,
+    model = tflearn.DNN(network, checkpoint_path=path.join(MODEL_PATH, MODEL_NAME),
                         tensorboard_dir=TRAIN_PATH, tensorboard_verbose=3, max_checkpoints=1)
 
     return model

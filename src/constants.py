@@ -16,8 +16,8 @@ TEST_SET_FILE_LIST = []
 IMAGE_DIM = 250
 LEARNING_RATE = 1e-3
 N_TRAIN_STEPS = 1
-TRAIN_PATH = path.join('logs', 'train/')
-MODEL_PATH = path.join('logs', 'model/')
+TRAIN_PATH = path.join('logs', 'train')
+MODEL_PATH = path.join('logs', 'model')
 MODEL_NAME = ('tsa-{}-lr-{}-{}-{}'.format('alexnet-v0.1', LEARNING_RATE, IMAGE_DIM, IMAGE_DIM))
 
 verbose = 1
