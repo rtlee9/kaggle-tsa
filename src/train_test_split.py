@@ -1,16 +1,16 @@
 import re
 import os
 
-from .constants import PREPROCESSED_DATA_FOLDER, TRAIN_TEST_SPLIT_RATIO, THREAT_ZONE
+from .constants import PREPROCESSED_DATA_FOLDER, TRAIN_TEST_SPLIT_RATIO
 
 
-def get_train_test_file_list():
+def get_train_test_file_list(threat_zone):
 
     if os.listdir(PREPROCESSED_DATA_FOLDER) == []:
         print ('No preprocessed data available.  Skipping preprocessed data setup..')
     else:
         file_list = [f for f in os.listdir(PREPROCESSED_DATA_FOLDER)
-                     if re.search(re.compile('-tz' + str(THREAT_ZONE) + '-'), f)]
+                     if re.search(re.compile('-tz' + str(threat_zone) + '-'), f)]
         train_test_split = len(file_list) - max(int(len(file_list) * TRAIN_TEST_SPLIT_RATIO), 1)
         train_set = file_list[:train_test_split]
         test_set = file_list[train_test_split:]

@@ -9,13 +9,17 @@ from .constants import PREPROCESSED_DATA_FOLDER, IMAGE_DIM, LEARNING_RATE, N_TRA
 from . import config
 
 
-def train_conv_net():
+def train_conv_net(threat_zone):
+
+    # hack: append threat_zone to global MODEL_NAME
+    global MODEL_NAME
+    MODEL_NAME += '-tz-{}'.format(threat_zone)
 
     val_features = []
     val_labels = []
 
     # get train and test batches
-    file_list, train_set_file_list, test_set_file_list = get_train_test_file_list()
+    file_list, train_set_file_list, test_set_file_list = get_train_test_file_list(threat_zone)
 
     # instantiate model
     model = alexnet(IMAGE_DIM, IMAGE_DIM, LEARNING_RATE)
@@ -57,4 +61,5 @@ def train_conv_net():
     model.save(path.join(config.path_model, model_name + '.pk'))
 
 if __name__ == '__main__':
-    train_conv_net()
+    for i in range(16):
+        train_conv_net(i + 1)

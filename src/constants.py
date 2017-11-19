@@ -5,7 +5,6 @@ from . import config
 INPUT_FOLDER = config.path_aps
 PREPROCESSED_DATA_FOLDER = config.path_cache
 STAGE1_LABELS = path.join(config.path_data, 'stage1_labels.csv')
-THREAT_ZONE = 1
 BATCH_SIZE = 16
 EXAMPLES_PER_SUBJECT = 182
 
@@ -19,6 +18,6 @@ LEARNING_RATE = 1e-3
 N_TRAIN_STEPS = 1
 TRAIN_PATH = path.join('logs', 'train/')
 MODEL_PATH = path.join('logs', 'model/')
-MODEL_NAME = ('tsa-{}-lr-{}-{}-{}-tz-{}'.format('alexnet-v0.1', LEARNING_RATE, IMAGE_DIM, IMAGE_DIM, THREAT_ZONE))
+MODEL_NAME = ('tsa-{}-lr-{}-{}-{}'.format('alexnet-v0.1', LEARNING_RATE, IMAGE_DIM, IMAGE_DIM))
 
 verbose = 1
