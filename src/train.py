@@ -1,3 +1,4 @@
+from os import path
 import numpy as np
 
 from .train_test_split import get_train_test_file_list
@@ -5,6 +6,7 @@ from .model import alexnet
 from .input_pipeline import input_pipeline
 from .utils import shuffle_train_set
 from .constants import PREPROCESSED_DATA_FOLDER, IMAGE_DIM, LEARNING_RATE, N_TRAIN_STEPS, MODEL_NAME, verbose
+from . import config
 
 
 def train_conv_net():

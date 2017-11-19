@@ -5,6 +5,7 @@ import tsahelper.tsahelper as tsa
 
 from .model import alexnet
 from .constants import INPUT_FOLDER, IMAGE_DIM, MODEL_NAME, LEARNING_RATE
+from . import config
 
 
 def preprocess_subject_image_tz(subject, tz_num):
