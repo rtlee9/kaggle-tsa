@@ -1,7 +1,7 @@
 import re
 import os
 
-from .constants import *
+from .constants import PREPROCESSED_DATA_FOLDER, TRAIN_TEST_SPLIT_RATIO, THREAT_ZONE
 
 
 def get_train_test_file_list():

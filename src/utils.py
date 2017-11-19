@@ -4,7 +4,7 @@ import random
 from matplotlib import animation
 import numpy as np
 
-from .constants import *
+from .constants import TRAIN_SET_FILE_LIST
 
 
 def shuffle_train_set(train_set):

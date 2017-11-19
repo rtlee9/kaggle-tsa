@@ -4,7 +4,7 @@ from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.estimator import regression
 from tflearn.layers.normalization import local_response_normalization
 
-from .constants import *
+from .constants import MODEL_PATH, MODEL_NAME, TRAIN_PATH
 
 
 def alexnet(width, height, lr):

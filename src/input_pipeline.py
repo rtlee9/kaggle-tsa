@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 from .train_test_split import get_train_test_file_list
-from .constants import *
+from .constants import PREPROCESSED_DATA_FOLDER
 
 
 def input_pipeline(filename, path):

@@ -5,7 +5,7 @@ from os import path
 from timeit import default_timer as timer
 import tsahelper.tsahelper as tsa
 
-from .constants import *
+from .constants import STAGE1_LABELS, INPUT_FOLDER, PREPROCESSED_DATA_FOLDER, BATCH_SIZE, EXAMPLES_PER_SUBJECT, verbose
 
 
 def preprocess_image(img, threat_zone, crop_dims):
