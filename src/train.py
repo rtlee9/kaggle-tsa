@@ -1,10 +1,10 @@
 from os import path
+import random
 import numpy as np
 
 from .train_test_split import get_train_test_file_list
 from .model import alexnet
 from .input_pipeline import input_pipeline
-from .utils import shuffle_train_set
 from .constants import PREPROCESSED_DATA_FOLDER, IMAGE_DIM, LEARNING_RATE, N_TRAIN_STEPS, MODEL_NAME, verbose
 from . import config
 
@@ -36,7 +36,7 @@ def train_conv_net():
     for i in range(N_TRAIN_STEPS):
 
         # shuffle the train set files before each step
-        shuffle_train_set(train_set_file_list)
+        random.shuffle(train_set_file_list)
 
         # run through every batch in the training set
         for f_in in train_set_file_list:
@@ -51,10 +51,10 @@ def train_conv_net():
             model.fit({'features': feature_batch}, {'labels': label_batch}, n_epoch=1,
                       validation_set=({'features': val_features}, {'labels': val_labels}),
                       shuffle=True, snapshot_step=None, show_metric=True,
-                      run_id=MODEL_NAME)
+                      run_id=model_name)
 
     # persist model to disk
-    model.save(path.join(config.path_model, MODEL_NAME + '.pk'))
+    model.save(path.join(config.path_model, model_name + '.pk'))
 
 if __name__ == '__main__':
     train_conv_net()
