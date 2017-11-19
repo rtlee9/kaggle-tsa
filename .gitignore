@@ -4,6 +4,7 @@ cache/
 output/
 .make/
 logs/
+model/
 
 # VIM files
 *.swp

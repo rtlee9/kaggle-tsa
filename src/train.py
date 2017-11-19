@@ -51,5 +51,8 @@ def train_conv_net():
                       shuffle=True, snapshot_step=None, show_metric=True,
                       run_id=MODEL_NAME)
 
+    # persist model to disk
+    model.save(path.join(config.path_model, MODEL_NAME + '.pk'))
+
 if __name__ == '__main__':
     train_conv_net()
