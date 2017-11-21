@@ -1,3 +1,4 @@
+import argparse
 from os import path
 import random
 import numpy as np
@@ -54,9 +55,12 @@ def train_conv_net(threat_zone):
                       shuffle=True, snapshot_step=None, show_metric=True,
                       run_id=model_name)
 
-    # persist model to disk
+    # persist model to disk and remove from GPU memory
     model.save(path.join(config.path_model, model_name + '.pk'))
+    del model
 
 if __name__ == '__main__':
-    for i in range(16):
-        train_conv_net(i + 1)
+    parser = argparse.ArgumentParser(description='TSA model training')
+    parser.add_argument('-tz', '--threat-zone', type=int, help='TSA threat zone')
+    args = parser.parse_args()
+    train_conv_net(args.threat_zone)
