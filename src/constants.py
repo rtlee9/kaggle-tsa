@@ -20,4 +20,6 @@ TRAIN_PATH = path.join('logs', 'train')
 MODEL_PATH = path.join('logs', 'model')
 MODEL_DESCRIPTION = ('tsa-{}-lr-{}-{}-{}'.format('alexnet-v0.1', LEARNING_RATE, IMAGE_DIM, IMAGE_DIM))
 
+BINARY_IMAGE_THRESHOLD = 9.999e-5
+
 verbose = 1
