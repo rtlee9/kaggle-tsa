@@ -11,7 +11,7 @@ def animate_scan(image, fig_size=(8, 8)):
     ax = fig.add_subplot(111)
 
     def animate(i):
-        im = ax.imshow(np.flipud(image[:, :, i].transpose()), cmap='viridis')
+        im = ax.imshow(np.flipud(image[:, :, i]), cmap='viridis')
         return [im]
 
     return animation.FuncAnimation(fig, animate, frames=range(0, image.shape[2]), interval=200, blit=True)
