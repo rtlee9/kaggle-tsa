@@ -6,6 +6,13 @@ import numpy as np
 plt.rc('animation', html='html5')
 
 
+def plot_image(image, title=None):
+    plt.imshow(np.flipud(image))
+    if title:
+        plt.title(title)
+    plt.show()
+
+
 def animate_scan(image, fig_size=(8, 8)):
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_subplot(111)
