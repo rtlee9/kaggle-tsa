@@ -5,8 +5,8 @@ from os import path
 from timeit import default_timer as timer
 import tsahelper.tsahelper as tsa
 
-from .constants import STAGE1_LABELS, INPUT_FOLDER, PREPROCESSED_DATA_FOLDER, BATCH_SIZE, EXAMPLES_PER_SUBJECT, verbose
 
+from .constants import STAGE1_LABELS, INPUT_FOLDER, PREPROCESSED_DATA_FOLDER, BATCH_SIZE, EXAMPLES_PER_SUBJECT, verbose, BINARY_IMAGE_THRESHOLD
 
 def preprocess_image(img, threat_zone, crop_dims):
     base_img = np.flipud(img)
@@ -147,6 +147,38 @@ def preprocess_tsa_data():
                         len(threat_zone_examples[0][1][1]),
                         batch_num)),
                     tz_examples_to_save)
+
+
+def crop_image(image):
+    """Find the edges of a TSA scan along each dimension and return the cropped image."""
+    image_binary = (image > BINARY_IMAGE_THRESHOLD) * 1
+    image_binary.sum()
+
+    s0 = image_binary.mean(axis=1).mean(axis=1)
+    s1 = image_binary.mean(axis=0).mean(axis=1)
+    s2 = image_binary.mean(axis=0).mean(axis=0)
+
+    m0 = s0 < .00015
+    top_border = np.argmax(m0)
+    if top_border == 0:
+        top_border = s0.shape[0]
+    top_border
+
+    middle = np.floor(s1.shape[0] / 2)
+    idx = np.arange(s1.shape[0])
+    m1 = s1 < .0002
+    right_border = np.argmax(np.where(idx > middle, m1, False))
+    left_border = np.argmax(~np.where(idx < middle, m1, False))
+    left_border, right_border
+
+    middle = np.floor(s2.shape[0] / 2)
+    idx = np.arange(s2.shape[0])
+    m2 = s2 < .01
+    back_border = np.argmax(np.where(idx > middle, m2, False))
+    front_border = np.argmax(~np.where(idx < middle, m2, False))
+    front_border, back_border
+
+    return image[:top_border, left_border:right_border, front_border:back_border]
 
 
 if __name__ == '__main__':
