@@ -6,7 +6,7 @@ import numpy as np
 plt.rc('animation', html='html5')
 
 
-def plot_image(path):
+def animate_scan(path):
     data = tsa.read_data(path)
     fig = plt.figure(figsize=(16, 16))
     ax = fig.add_subplot(111)
