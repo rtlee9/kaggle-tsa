@@ -6,11 +6,20 @@ import numpy as np
 plt.rc('animation', html='html5')
 
 
-def plot_image(image, title=None):
+def _plot_image(image, title=None):
     plt.imshow(np.flipud(image))
     if title:
         plt.title(title)
+
+
+def plot_image(*args, **kwargs):
+    _plot_image(*args, **kwargs)
     plt.show()
+
+
+def save_image(filename, *args, **kwargs):
+    _plot_image(*args, **kwargs)
+    plt.savefig(filename)
 
 
 def animate_scan(image, fig_size=(8, 8)):
