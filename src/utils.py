@@ -1,3 +1,4 @@
+"""Utility functions for TSA challenge."""
 import tsahelper.tsahelper as tsa
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -13,16 +14,19 @@ def _plot_image(image, title=None):
 
 
 def plot_image(*args, **kwargs):
+    """Plot image to matplotlib.pyplot."""
     _plot_image(*args, **kwargs)
     plt.show()
 
 
 def save_image(filename, *args, **kwargs):
+    """Save image to disk as png file."""
     _plot_image(*args, **kwargs)
     plt.savefig(filename)
 
 
 def animate_scan(image, fig_size=(8, 8)):
+    """Animate a 3 dimensional image by lapsing across the third dimension."""
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_subplot(111)
 
@@ -34,5 +38,6 @@ def animate_scan(image, fig_size=(8, 8)):
 
 
 def load_animate_scan(path, *args, **kwargs):
+    """Load a 3D image from from disk and animate."""
     image = tsa.read_data(path)
     return animate_scan(image, *args, **kwargs)
