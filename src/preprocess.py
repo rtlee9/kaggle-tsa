@@ -7,8 +7,8 @@ import json
 import tsahelper.tsahelper as tsa
 from tqdm import tqdm
 
-from .config import path_labels, path_a3d, path_cache, verbose, path_plots
-from .constants import IMAGE_DIM
+from .config import path_labels, path_a3d, path_cache, verbose, path_plots, path_logs
+from .constants import IMAGE_DIM, CROP_LOG_INTERVAL
 from .utils import save_image
 
 
@@ -63,18 +63,19 @@ def preprocess_tsa_data():
     scans['zone_num'] = scans.Id.str.split('Zone').str[1].astype(int)
 
     # preprocess each scan
-    blacklist = {}
-    for subject_id in tqdm(scans.subject_id.unique()):
+    crop_log = {}
+    for i, subject_id in tqdm(enumerate(scans.subject_id.unique())):
         image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
         image = image.transpose(2, 0, 1)  # axis are now height (top) x width (side) x  depth (front)
         cropped_image = crop_image(image)
-        if cropped_image.shape[0] < 550 or cropped_image.shape[1] < 300 or cropped_image.shape[1] > 520 or cropped_image.shape[2] < 100 or cropped_image.shape[2] > 300:
-            blacklist[subject_id] = cropped_image.shape
-            with open('blacklist.json', 'w') as f:
-                json.dump(blacklist, f, indent=4)
         preprocessed_image = preprocess_image(cropped_image)
         resized_image = resize(preprocessed_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
         np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
+
+        crop_log[subject_id] = cropped_image.shape
+        if i % CROP_LOG_INTERVAL == 0:
+            with open(path.join(path_logs, 'crop_log.json'), 'w') as f:
+                json.dump(crop_log, f, indent=4)
 
         # save a cross section for validating cropping
         save_image(

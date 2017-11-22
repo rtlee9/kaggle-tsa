@@ -14,8 +14,9 @@ path_aps = path.join(path_data, 'aps')
 path_external_storage = '/mnt/hdd/data/'
 path_a3d = path.join(path_external_storage, 'a3d')
 path_labels = path.join(path_data, 'stage1_labels.csv')
-path_train = path.join('logs', 'train')
-path_model = path.join('logs', 'model')
+path_logs = path.join(path_root, 'logs')
+path_train = path.join(path_logs, 'train')
+path_model = path.join(path_logs, 'model')
 
 # define run settings
 verbose = 1
