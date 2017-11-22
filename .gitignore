@@ -5,6 +5,7 @@ submissions/
 .make/
 logs/
 model/
+plots/
 
 # VIM files
 *.swp
