@@ -5,7 +5,7 @@ from matplotlib import animation
 import numpy as np
 import pandas as pd
 
-from .config import path_labels, path_submissions
+from .config import path_labels, path_sample_submissions
 
 plt.rc('animation', html='html5')
 
@@ -49,7 +49,7 @@ def load_animate_scan(path, *args, **kwargs):
 def get_labels(type='labels'):
     """Read labels / submissions from disk, parse and return."""
     if type == 'submissions':
-        labels = pd.read_csv(path_submissions)
+        labels = pd.read_csv(path_sample_submissions)
     else:
         labels = pd.read_csv(path_labels)
     labels['subject_id'] = labels.Id.str.split('_').str[0]
