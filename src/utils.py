@@ -3,6 +3,9 @@ import tsahelper.tsahelper as tsa
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
+import pandas as pd
+
+from .config import path_labels, path_submissions
 
 plt.rc('animation', html='html5')
 
@@ -41,3 +44,14 @@ def load_animate_scan(path, *args, **kwargs):
     """Load a 3D image from from disk and animate."""
     image = tsa.read_data(path)
     return animate_scan(image, *args, **kwargs)
+
+
+def get_labels(type='labels'):
+    """Read labels / submissions from disk, parse and return."""
+    if type == 'submissions':
+        labels = pd.read_csv(path_submissions)
+    else:
+        labels = pd.read_csv(path_labels)
+    labels['subject_id'] = labels.Id.str.split('_').str[0]
+    labels['zone_num'] = labels.Id.str.split('Zone').str[1].astype(int)
+    return labels
