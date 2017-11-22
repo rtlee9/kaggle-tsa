@@ -58,7 +58,7 @@ def preprocess_tsa_data(type='labels'):
     """Preprocess all a3d files for training and persist to disk."""
     scans = get_labels(type)
     crop_log = {}
-    for i, subject_id in tqdm(enumerate(scans.subject_id.unique())):
+    for subject_id in tqdm(scans.subject_id.unique()):
         image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
         image = image.transpose(2, 0, 1)  # axis are now height (top) x width (side) x  depth (front)
         cropped_image = crop_image(image)
@@ -66,9 +66,6 @@ def preprocess_tsa_data(type='labels'):
         resized_image = resize(preprocessed_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
         np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
         crop_log[subject_id] = cropped_image.shape
-        if i % CROP_LOG_INTERVAL == 0:
-            with open(path.join(path_logs, 'crop_log.json'), 'w') as f:
-                json.dump(crop_log, f, indent=4)
 
         # save a cross section for validating cropping
         save_image(
