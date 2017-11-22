@@ -1,6 +1,5 @@
 """Preprocess raw a3d scan images for use in model training."""
 import numpy as np
-import pandas as pd
 from skimage.transform import resize
 from os import path
 import json
@@ -9,7 +8,7 @@ from tqdm import tqdm
 
 from .config import path_labels, path_a3d, path_cache, verbose, path_plots, path_logs
 from .constants import IMAGE_DIM, CROP_LOG_INTERVAL
-from .utils import save_image
+from .utils import save_image, get_labels
 
 
 def preprocess_image(img):
@@ -55,14 +54,9 @@ def crop_image(image):
     return resized_image
 
 
-def preprocess_tsa_data():
+def preprocess_tsa_data(type='labels'):
     """Preprocess all a3d files for training and persist to disk."""
-    # get list of scans
-    scans = pd.read_csv(path_labels)
-    scans['subject_id'] = scans.Id.str.split('_').str[0]
-    scans['zone_num'] = scans.Id.str.split('Zone').str[1].astype(int)
-
-    # preprocess each scan
+    scans = get_labels(type)
     crop_log = {}
     for i, subject_id in tqdm(enumerate(scans.subject_id.unique())):
         image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
@@ -71,7 +65,6 @@ def preprocess_tsa_data():
         preprocessed_image = preprocess_image(cropped_image)
         resized_image = resize(preprocessed_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
         np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
-
         crop_log[subject_id] = cropped_image.shape
         if i % CROP_LOG_INTERVAL == 0:
             with open(path.join(path_logs, 'crop_log.json'), 'w') as f:
@@ -83,6 +76,10 @@ def preprocess_tsa_data():
             tsa.convert_to_grayscale(resized_image)[:, :, np.floor(resized_image.shape[2] / 2).astype(int) - 5],
         )
 
+    with open(path.join(path_logs, 'crop_log_{}.json'.format(type)), 'w') as f:
+        json.dump(crop_log, f, indent=4)
+
 
 if __name__ == '__main__':
     preprocess_tsa_data()
+    preprocess_tsa_data('submissions')
