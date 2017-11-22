@@ -1,25 +1,7 @@
-from os import path
-from . import config
-
-
-INPUT_FOLDER = config.path_aps
-PREPROCESSED_DATA_FOLDER = config.path_cache
-STAGE1_LABELS = path.join(config.path_data, 'stage1_labels.csv')
 BATCH_SIZE = 16
-EXAMPLES_PER_SUBJECT = 182
-
-FILE_LIST = []
 TRAIN_TEST_SPLIT_RATIO = 0.1
-TRAIN_SET_FILE_LIST = []
-TEST_SET_FILE_LIST = []
-
-IMAGE_DIM = 250
+IMAGE_DIM = 128
 LEARNING_RATE = 1e-3
 N_TRAIN_STEPS = 1
-TRAIN_PATH = path.join('logs', 'train')
-MODEL_PATH = path.join('logs', 'model')
 MODEL_DESCRIPTION = ('tsa-{}-lr-{}-{}-{}'.format('alexnet-v0.1', LEARNING_RATE, IMAGE_DIM, IMAGE_DIM))
-
 BINARY_IMAGE_THRESHOLD = 9.999e-5
-
-verbose = 1
