@@ -1,3 +1,4 @@
+"""Constant variables for TSA challenge."""
 BATCH_SIZE = 16
 TRAIN_TEST_SPLIT_RATIO = 0.1
 IMAGE_DIM = 128

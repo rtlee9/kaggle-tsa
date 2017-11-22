@@ -1,3 +1,4 @@
+"""Configuration variables for TSA challenge."""
 from os import path
 
 
