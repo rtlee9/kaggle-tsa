@@ -35,6 +35,14 @@ def get_lower_bound(s, sensitivity):
     return np.argmax(np.arange(s.shape[0], 0, -1) * (d1_bin ^ np.roll(d1_bin, -1)))  # calculate the cutoff
 
 
+def get_bounds(s, sensitivity=.4e-4, n=10):
+    """Get lower and upper bounds using moving average derivative."""
+    f = s * (s > sensitivity)  # remove layer-level noise
+    ma = np.convolve(f, np.ones((n,)) / n, mode='valid')  # moving average
+    d = ma - np.roll(ma, -n)
+    return np.argmin(d), np.argmax(d)
+
+
 def crop_image(image):
     """Find the edges of a TSA scan along each dimension and return the cropped image."""
     s0 = image.mean(axis=1).mean(axis=1)
@@ -45,8 +53,7 @@ def crop_image(image):
     right_border = get_upper_bound(s1, .9e-7)
     left_border = get_lower_bound(s1, .9e-7)
     avg_lr_border = np.floor(left_border + (s1.shape[0] - right_border) / 2).astype(int)
-    back_border = get_upper_bound(s2, .5e-6)
-    front_border = get_lower_bound(s2, .5e-6)
+    front_border, back_border = get_bounds(s2)
 
     resized_image = image[:top_border, avg_lr_border:s1.shape[0] - avg_lr_border, front_border:back_border]
     if verbose > 1:
