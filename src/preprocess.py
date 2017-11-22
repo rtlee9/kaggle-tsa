@@ -40,7 +40,8 @@ def get_bounds(s, sensitivity=.4e-4, n=10):
     f = s * (s > sensitivity)  # remove layer-level noise
     ma = np.convolve(f, np.ones((n,)) / n, mode='valid')  # moving average
     d = ma - np.roll(ma, -n)
-    return np.argmin(d), np.argmax(d)
+    _buffer = np.floor(n * .8).astype(int)
+    return np.argmin(d) - buffer, np.argmax(d) + n + _buffer
 
 
 def crop_image(image):
