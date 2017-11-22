@@ -6,8 +6,8 @@ import json
 import tsahelper.tsahelper as tsa
 from tqdm import tqdm
 
-from .config import path_labels, path_a3d, path_cache, verbose, path_plots, path_logs
-from .constants import IMAGE_DIM, CROP_LOG_INTERVAL
+from .config import path_a3d, path_cache, verbose, path_plots, path_logs
+from .constants import IMAGE_DIM
 from .utils import save_image, get_labels
 
 
