@@ -1,39 +1,45 @@
-from os import path
-import tflearn
-from tflearn.layers.conv import conv_2d, max_pool_2d
-from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.estimator import regression
-from tflearn.layers.normalization import local_response_normalization
+"""Convolutional neural net (TSA net)."""
 
-from .constants import MODEL_PATH, TRAIN_PATH
+import torch.nn as nn
 
 
-def alexnet(width, height, lr, model_name):
-    network = input_data(shape=[None, width, height, 1], name='features')
-    network = conv_2d(network, 96, 11, strides=4, activation='relu')
-    network = max_pool_2d(network, 3, strides=2)
-    network = local_response_normalization(network)
-    network = conv_2d(network, 256, 5, activation='relu')
-    network = max_pool_2d(network, 3, strides=2)
-    network = local_response_normalization(network)
-    network = conv_2d(network, 384, 3, activation='relu')
-    network = conv_2d(network, 384, 3, activation='relu')
-    network = conv_2d(network, 256, 3, activation='relu')
-    network = max_pool_2d(network, 3, strides=2)
-    network = local_response_normalization(network)
-    network = fully_connected(network, 4096, activation='tanh')
-    network = dropout(network, 0.5)
-    network = fully_connected(network, 4096, activation='tanh')
-    network = dropout(network, 0.5)
-    network = fully_connected(network, 2, activation='softmax')
-    network = regression(network, optimizer='momentum', loss='categorical_crossentropy',
-                         learning_rate=lr, name='labels')
+class TsaNet(nn.Module):
+    """3D convolutional neural net to predict threat probability by threat zone."""
 
-    model = tflearn.DNN(network, checkpoint_path=path.join(MODEL_PATH, model_name),
-                        tensorboard_dir=TRAIN_PATH, tensorboard_verbose=3, max_checkpoints=1)
+    def __init__(self, num_classes=1):
+        """Initialize TsaNet structure."""
+        super(TsaNet, self).__init__()
+        self.features = nn.Sequential(  # initial torch.Size([1, 1, 64, 32, 32])
 
-    return model
+            nn.Conv3d(1, 64, kernel_size=5, stride=2, padding=2),  # torch.Size([1, 64, 32, 16, 16])
+            nn.ReLU(inplace=True),
+            nn.MaxPool3d(kernel_size=(2, 1, 1), stride=(2, 1, 1)),  # torch.Size([1, 64, 16, 16, 16])
 
+            nn.Conv3d(64, 128, kernel_size=5, stride=2, padding=2),  # torch.Size([1, 128, 8, 8, 8])
+            nn.ReLU(inplace=True),
+            nn.Conv3d(128, 128, kernel_size=3, stride=1, padding=1),  # torch.Size([1, 128, 8, 8, 8])
+            nn.ReLU(inplace=True),
+            nn.MaxPool3d(kernel_size=2, stride=2),  # torch.Size([1, 128, 4, 4, 4])
 
-if __name__ == '__main__':
-    print(alexnet(4, 5, .3, 'test_name'))
+            nn.Conv3d(128, 256, kernel_size=3, stride=1, padding=1),  # torch.Size([1, 256, 4, 4, 4])
+            nn.ReLU(inplace=True),
+            nn.Conv3d(256, 256, kernel_size=3, stride=1, padding=1),  # torch.Size([1, 256, 4, 4, 4])
+            nn.ReLU(inplace=True),
+            nn.MaxPool3d(kernel_size=2, stride=2),  # torch.Size([1, 256, 2, 2, 2])
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(.7),
+            nn.Linear(256 * 2 * 2 * 2, 128),
+            nn.ReLU(inplace=True),
+            nn.Dropout(.7),
+            nn.Linear(128, num_classes),
+            nn.Softmax(),
+        )
+
+    def forward(self, x):
+        """Net forward pass."""
+        x = self.features(x)
+        x = x.view(x.size(0), 256 * 2 * 2 * 2)
+        x = self.classifier(x)
+        return x
