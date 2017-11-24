@@ -41,7 +41,7 @@ def get_bounds(s, sensitivity=.4e-4, n=10):
     ma = np.convolve(f, np.ones((n,)) / n, mode='valid')  # moving average
     d = ma - np.roll(ma, -n)
     _buffer = np.floor(n * .8).astype(int)
-    return np.argmin(d) - buffer, np.argmax(d) + n + _buffer
+    return np.argmin(d) - _buffer, np.argmax(d) + n + _buffer
 
 
 def crop_image(image):
