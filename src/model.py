@@ -34,7 +34,7 @@ class TsaNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(.7),
             nn.Linear(128, num_classes),
-            nn.Softmax(),
+            nn.Sigmoid(),
         )
 
     def forward(self, x):
