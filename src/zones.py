@@ -1,4 +1,6 @@
 """Threat zone maps."""
+from .constants import IMAGE_DIM
+from .crop import crop_dims
 
 # map full threat zone space to left or right half
 # Note _left_ means _stage left_
@@ -17,6 +19,11 @@ left_right_map = {
     15: 16,
 }
 right_left_map = {v: k for k, v in left_right_map.items()}
+
+image_dims = (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM)
+common_threat_body_map = {
+    16: crop_dims(image_dims, top=25, left=70, right=105),
+}
 
 
 def test_zone_maps():
