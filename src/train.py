@@ -4,6 +4,7 @@ import time
 from os import path
 import hashlib
 import argparse
+from tqdm import tqdm
 
 import torch
 import torch.nn.functional as F
@@ -56,7 +57,7 @@ def main(threat_zone):
     model.train()
     t0 = time.time()
     for epoch in range(constants.N_EPOCHS):
-        for batch_idx, data in enumerate(loader_train):
+        for data in tqdm(loader_train):
             images, target = data['image'], data['threat']
             images, target = images.cuda(), target.cuda()
             images, target = Variable(images), Variable(target)
@@ -65,20 +66,14 @@ def main(threat_zone):
             loss = F.mse_loss(output, target.type(torch.cuda.FloatTensor))
             loss.backward()
             optimizer.step()
-            if batch_idx % constants.LOG_INTERVAL == 0:
-                print('Train Epoch: {} [{:04d}/{} ({:02d}%)]\tLoss: {:.6f}'.format(
-                    epoch,
-                    batch_idx * len(target),
-                    len(loader_train.dataset),
-                    int(100. * batch_idx / len(loader_train)),
-                    loss.data[0],
-                ))
 
         # print validation accuracy
         validation_output = model(validation_images)
-        validation_loss = F.mse_loss(validation_output, validation_targets)
-        print('Validation MSE loss: {:.6f}'.format(validation_loss.data[0]))
-        print('Validation MAE loss: {:.6f}'.format(torch.mean(torch.abs(validation_targets - validation_output)).data[0]))
+        print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
+            epoch,
+            F.l1_loss(output, target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(validation_output, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+        ))
 
     if config.verbose > 0:
         print('Training completed in {:.1f} minutes'.format((time.time() - t0) / 60))
@@ -86,7 +81,7 @@ def main(threat_zone):
     # save model state and description to disk
     model_name = 'TSA_net_{n}_opt_{opt}_epochs_{e}_lr_{lr}_momentum_{m}_l2_{l2}'.format(
         n=hash_model(model),
-        e=epoch,
+        e=epoch + 1,
         opt=str(type(optimizer)).split('.')[-1].split("'")[0],
         lr=constants.LR,
         m=constants.MOMENTUM,
