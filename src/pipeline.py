@@ -5,6 +5,7 @@ import json
 
 import pandas as pd
 import numpy as np
+from scipy import ndimage
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -121,6 +122,21 @@ class ZoneCrop(object):
         return hard_crop(image, self.crop_dims)
 
 
+class RandomRotation(object):
+    """Random rotation transformation."""
+
+    def __init__(self, range=(-2, 2), axes=(1, 2)):
+        """Initialize RandomRotation with threat zone."""
+        super().__init__()
+        self.range = range
+        self.axes = axes
+
+    def __call__(self, image):
+        """Rotate image by by a random degree around specified axes."""
+        rotation = np.random.uniform(*self.range)
+        return ndimage.rotate(image, rotation, self.axes, reshape=False)
+
+
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
@@ -139,7 +155,7 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), ToTensor()]  # training transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), ToTensor()]  # training transformations
     test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
