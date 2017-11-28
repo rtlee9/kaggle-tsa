@@ -38,6 +38,7 @@ def main(threat_zone):
         model.parameters(),
         lr=constants.LR,
         momentum=constants.MOMENTUM,
+        dampening=constants.DAMPENING,
         weight_decay=constants.L2_PENALTY,
     )
 
