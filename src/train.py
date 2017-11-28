@@ -52,7 +52,6 @@ def main(threat_zone):
     validation_images, validation_targets = validation_data['image'], validation_data['threat']
     validation_images, validation_targets = validation_images.cuda(), validation_targets.cuda()
     validation_images, validation_targets = Variable(validation_images), Variable(validation_targets)
-    validation_targets = validation_targets.type(torch.cuda.FloatTensor)
 
     # train model
     model.train()
@@ -63,17 +62,26 @@ def main(threat_zone):
             images, target = images.cuda(), target.cuda()
             images, target = Variable(images), Variable(target)
             optimizer.zero_grad()
-            output = model(images)
-            loss = F.mse_loss(output, target.type(torch.cuda.FloatTensor))
+            pred_pos = model(images)
+            pred_neg = 1 - pred_pos
+            output = torch.cat((pred_neg, pred_pos), dim=1)
+            loss = F.nll_loss(output, target)
             loss.backward()
             optimizer.step()
 
         # print validation accuracy
-        validation_output = model(validation_images)
+        pred_pos_val = model(validation_images)
+        pred_neg_val = 1 - pred_pos_val
+        output_val = torch.cat((pred_neg_val, pred_pos_val), dim=1)
+        print('Epoch {} train / validation NLL loss: {:.6f} / {:.6f}'.format(
+            epoch,
+            loss.data[0],
+            F.nll_loss(output_val, validation_targets).data[0],
+        ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.l1_loss(output, target.type(torch.cuda.FloatTensor)).data[0],
-            F.l1_loss(validation_output, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(pred_pos.squeeze(), target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(pred_pos_val.squeeze(), validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
 
     if config.verbose > 0:

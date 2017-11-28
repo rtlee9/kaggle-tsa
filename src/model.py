@@ -41,4 +41,4 @@ class TsaNet(nn.Module):
         x = self.features(x)
         x = x.view(x.size(0), 256)
         x = self.classifier(x)
-        return x.squeeze()
+        return x
