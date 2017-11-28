@@ -26,14 +26,6 @@ def hash_model(model):
     return hash_object.hexdigest()
 
 
-def loss_(predictions, targets):
-    """Return the log loss of predictions vs targets."""
-    targets = targets.squeeze().type(torch.cuda.FloatTensor)
-    predictions = predictions.squeeze().type(torch.cuda.FloatTensor)
-    predictions = torch.clamp(predictions, min=EPSILON, max=1 - EPSILON)  # clamp at epsilon to prevent inf loss
-    return - torch.mean(targets * predictions.log() + (1 - targets) * (1 - predictions).log())
-
-
 def main(threat_zone):
     """Train threat zone specific model."""
     loader_train, loader_validation, loader_submission = get_data_loaders(threat_zone)
@@ -74,7 +66,7 @@ def main(threat_zone):
             images, target = Variable(images), Variable(target)
             optimizer.zero_grad()
             output = model(images)
-            loss = loss_(output, target)
+            loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
             loss.backward()
             optimizer.step()
 
@@ -83,12 +75,12 @@ def main(threat_zone):
         print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
             epoch,
             loss.data[0],
-            loss_(output_val, validation_targets).data[0],
+            F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.l1_loss(output.squeeze(), target.type(torch.cuda.FloatTensor)).data[0],
-            F.l1_loss(output_val.squeeze(), validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(output, target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
 
     if config.verbose > 0:
