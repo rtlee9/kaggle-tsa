@@ -55,3 +55,9 @@ def get_labels(type='labels'):
     labels['subject_id'] = labels.Id.str.split('_').str[0]
     labels['zone_num'] = labels.Id.str.split('Zone').str[1].astype(int)
     return labels
+
+
+def get_priors():
+    """Get baseline frequencies by threat zone."""
+    labels = get_labels()
+    return labels.groupby('zone_num').Probability.mean()
