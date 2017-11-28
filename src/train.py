@@ -66,7 +66,7 @@ def main(threat_zone):
             images, target = Variable(images), Variable(target)
             optimizer.zero_grad()
             output = model(images)
-            loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
+            loss = F.binary_cross_entropy_with_logits(output, target.type(torch.cuda.FloatTensor))
             loss.backward()
             optimizer.step()
 
@@ -75,7 +75,7 @@ def main(threat_zone):
         print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
             epoch,
             loss.data[0],
-            F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            F.binary_cross_entropy_with_logits(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,

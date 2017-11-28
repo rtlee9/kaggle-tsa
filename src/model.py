@@ -33,7 +33,6 @@ class TsaNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(),
             nn.Linear(32, num_classes),
-            nn.Sigmoid(),
         )
 
     def forward(self, x):
