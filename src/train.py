@@ -15,6 +15,9 @@ from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
 from .utils import get_labels
+from .constants import CLASS_WEIGHTS
+
+class_weights = torch.cuda.FloatTensor(CLASS_WEIGHTS)
 
 
 def hash_model(model):
@@ -65,7 +68,7 @@ def main(threat_zone):
             pred_pos = model(images)
             pred_neg = 1 - pred_pos
             output = torch.cat((pred_neg, pred_pos), dim=1)
-            loss = F.nll_loss(output, target)
+            loss = F.nll_loss(output, target, weight=class_weights)
             loss.backward()
             optimizer.step()
 
@@ -76,7 +79,7 @@ def main(threat_zone):
         print('Epoch {} train / validation NLL loss: {:.6f} / {:.6f}'.format(
             epoch,
             loss.data[0],
-            F.nll_loss(output_val, validation_targets).data[0],
+            F.nll_loss(output_val, validation_targets, weight=class_weights).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
