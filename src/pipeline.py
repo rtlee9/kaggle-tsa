@@ -126,7 +126,7 @@ class RandomRotation(object):
     """Random rotation transformation."""
 
     def __init__(self, range=(-2, 2), axes=(1, 2)):
-        """Initialize RandomRotation with threat zone."""
+        """Initialize RandomRotation with rotation parameters."""
         super().__init__()
         self.range = range
         self.axes = axes
@@ -135,6 +135,22 @@ class RandomRotation(object):
         """Rotate image by by a random degree around specified axes."""
         rotation = np.random.uniform(*self.range)
         return ndimage.rotate(image, rotation, self.axes, reshape=False)
+
+
+class RandomShear(object):
+    """Random shear transformation."""
+
+    def __init__(self, range=(-.05, .05)):
+        """Initialize RandomShear with shear parameters."""
+        super().__init__()
+        self.range = range
+
+    def __call__(self, image):
+        """Shear image by a random amount along the x-axis within the range specified."""
+        matrix = np.eye(3)
+        shear_factor = np.random.uniform(*self.range)
+        matrix[1, 0] = shear_factor
+        return ndimage.affine_transform(image, matrix)
 
 
 class ToTensor(object):
@@ -155,7 +171,7 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), ToTensor()]  # training transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor()]  # training transformations
     test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
