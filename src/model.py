@@ -29,10 +29,10 @@ class TsaNet(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(256, 128),
+            nn.Linear(256, 32),
             nn.ReLU(inplace=True),
             nn.Dropout(),
-            nn.Linear(128, num_classes),
+            nn.Linear(32, num_classes),
             nn.Sigmoid(),
         )
 

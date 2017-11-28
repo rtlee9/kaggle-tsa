@@ -125,7 +125,7 @@ class ZoneCrop(object):
 class RandomRotation(object):
     """Random rotation transformation."""
 
-    def __init__(self, range=(-2, 2), axes=(1, 2)):
+    def __init__(self, range=(-3, 3), axes=(1, 2)):
         """Initialize RandomRotation with rotation parameters."""
         super().__init__()
         self.range = range
@@ -140,7 +140,7 @@ class RandomRotation(object):
 class RandomShear(object):
     """Random shear transformation."""
 
-    def __init__(self, range=(-.05, .05)):
+    def __init__(self, range=(-.07, .07)):
         """Initialize RandomShear with shear parameters."""
         super().__init__()
         self.range = range

@@ -1,7 +1,6 @@
 """Constant variables for TSA challenge."""
 
 # preprocessing constants
-BATCH_SIZE = 16
 TRAIN_TEST_SPLIT_RATIO = 0.1
 IMAGE_DIM = 128
 LEARNING_RATE = 1e-3
@@ -9,12 +8,13 @@ N_TRAIN_STEPS = 1
 CROP_LOG_INTERVAL = 20
 
 # training constants
-BATCH_SIZE = 24
+BATCH_SIZE = 48
 LOG_INTERVAL = 50
 VALIDATION_INTERVAL = 200
-LR = 1e-2
+LR = 3e-3
 MOMENTUM = .9
-DAMPENING = .1
-L2_PENALTY = 5e-4
+DAMPENING = .2
+L2_PENALTY = 1e-3
 CLASS_WEIGHTS = (1, 2)
-N_EPOCHS = 9
+N_EPOCHS = 7
+EPSILON = 10e-15

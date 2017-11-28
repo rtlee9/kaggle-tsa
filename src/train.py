@@ -15,7 +15,7 @@ from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
 from .utils import get_labels
-from .constants import CLASS_WEIGHTS
+from .constants import CLASS_WEIGHTS, EPSILON
 
 class_weights = torch.cuda.FloatTensor(CLASS_WEIGHTS)
 
@@ -24,6 +24,14 @@ def hash_model(model):
     """Create hash representation of a model based on its __repr__."""
     hash_object = hashlib.sha1(bytes(str(model).encode('ascii')))
     return hash_object.hexdigest()
+
+
+def loss_(predictions, targets):
+    """Return the log loss of predictions vs targets."""
+    targets = targets.squeeze().type(torch.cuda.FloatTensor)
+    predictions = predictions.squeeze().type(torch.cuda.FloatTensor)
+    predictions = torch.clamp(predictions, min=EPSILON, max=1 - EPSILON)  # clamp at epsilon to prevent inf loss
+    return - torch.mean(targets * predictions.log() + (1 - targets) * (1 - predictions).log())
 
 
 def main(threat_zone):
@@ -65,26 +73,22 @@ def main(threat_zone):
             images, target = images.cuda(), target.cuda()
             images, target = Variable(images), Variable(target)
             optimizer.zero_grad()
-            pred_pos = model(images)
-            pred_neg = 1 - pred_pos
-            output = torch.cat((pred_neg, pred_pos), dim=1)
-            loss = F.nll_loss(output, target, weight=class_weights)
+            output = model(images)
+            loss = loss_(output, target)
             loss.backward()
             optimizer.step()
 
         # print validation accuracy
-        pred_pos_val = model(validation_images)
-        pred_neg_val = 1 - pred_pos_val
-        output_val = torch.cat((pred_neg_val, pred_pos_val), dim=1)
-        print('Epoch {} train / validation NLL loss: {:.6f} / {:.6f}'.format(
+        output_val = model(validation_images)
+        print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
             epoch,
             loss.data[0],
-            F.nll_loss(output_val, validation_targets, weight=class_weights).data[0],
+            loss_(output_val, validation_targets).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.l1_loss(pred_pos.squeeze(), target.type(torch.cuda.FloatTensor)).data[0],
-            F.l1_loss(pred_pos_val.squeeze(), validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(output.squeeze(), target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(output_val.squeeze(), validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
 
     if config.verbose > 0:
