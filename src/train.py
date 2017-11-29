@@ -15,9 +15,7 @@ from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
 from .utils import get_labels
-from .constants import CLASS_WEIGHTS, EPSILON
-
-class_weights = torch.cuda.FloatTensor(CLASS_WEIGHTS)
+from .constants import PREDICTION_NORM
 
 
 def hash_model(model):
@@ -29,11 +27,10 @@ def hash_model(model):
 def main(threat_zone):
     """Train threat zone specific model."""
     loader_train, loader_validation, loader_submission = get_data_loaders(threat_zone)
-    if config.verbose > 0:
-        labels = get_labels()
-        tz_labels = labels[labels.zone_num == threat_zone]
-        print('{:.1f}% of labels are threat positive'.format(
-            tz_labels.Probability.value_counts(normalize=True)[1] * 100))
+    labels = get_labels()
+    tz_labels = labels[labels.zone_num == threat_zone]
+    threat_ratio = tz_labels.Probability.value_counts(normalize=True)
+    norm_factor = PREDICTION_NORM * threat_ratio[0]
 
     model = TsaNet()
     model.cuda()
@@ -56,6 +53,13 @@ def main(threat_zone):
     validation_images, validation_targets = validation_images.cuda(), validation_targets.cuda()
     validation_images, validation_targets = Variable(validation_images), Variable(validation_targets)
 
+    # baseline stats
+    if config.verbose > 0:
+        print('{:.1f}% of labels are threat positive'.format(threat_ratio[1] * 100))
+        print('Baseline guesses would yield {:.2f} BCE score'.format(
+            F.binary_cross_entropy(Variable(torch.cuda.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio[1]), validation_targets.type(torch.cuda.FloatTensor)).data[0]
+        ))
+
     # train model
     model.train()
     t0 = time.time()
@@ -71,15 +75,15 @@ def main(threat_zone):
             optimizer.step()
 
         # print validation accuracy
-        output_val = model(validation_images)
+        output_val = torch.sigmoid(model(validation_images)) / norm_factor
         print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
             epoch,
-            loss.data[0],
-            F.binary_cross_entropy_with_logits(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            F.binary_cross_entropy(torch.sigmoid(output) / norm_factor, target.type(torch.cuda.FloatTensor)).data[0],
+            F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.l1_loss(output, target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(torch.sigmoid(output) / norm_factor, target.type(torch.cuda.FloatTensor)).data[0],
             F.l1_loss(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
 

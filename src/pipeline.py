@@ -16,7 +16,7 @@ from skimage.transform import resize
 from . import config
 from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
-from .constants import BATCH_SIZE
+from .constants import BATCH_SIZE, CLASS_WEIGHTS
 from .crop import hard_crop
 
 
@@ -183,11 +183,18 @@ def get_data_loaders(threat_zone):
     assert (len(dataset_train) == 2206)
     assert (dataset_train.__getitem__(0))
     assert (dataset_train.__getitem__(len(dataset_train) - 1))
+    targets = dataset_train.labels.Probability
+    classes = np.sort(np.unique(targets))
+    class_weights = {cls: CLASS_WEIGHTS[cls] for cls in classes}
+    weights = targets.map(lambda cls: class_weights[cls]).values
+    weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights.tolist(), len(weights))
+    batch_sampler = torch.utils.data.sampler.BatchSampler(weighted_sampler, BATCH_SIZE, drop_last=False)
     loader_train = DataLoader(
         dataset_train,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
         num_workers=3,
+        # batch_size=BATCH_SIZE,
+        # shuffle=True,
+        batch_sampler=batch_sampler,
     )
 
     # create loader for validation data
