@@ -168,7 +168,7 @@ class ToTensor(object):
         """Convert to float tensor and add two dimensions:
         one for the number of images and the other for initial chanels (no RGB, so this is 1).
         """
-        return torch.from_numpy(image).type(torch.FloatTensor).unsqueeze(0) * 2
+        return torch.from_numpy(image).type(torch.FloatTensor).unsqueeze(0) * 2 - .25
 
 
 def get_data_loaders(threat_zone):
