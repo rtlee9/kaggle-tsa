@@ -15,7 +15,6 @@ from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
 from .utils import get_labels
-from .constants import PREDICTION_NORM
 
 
 def adjust_learning_rate(optimizer, epoch):
@@ -37,7 +36,6 @@ def main(threat_zone):
     labels = get_labels()
     tz_labels = labels[labels.zone_num == threat_zone]
     threat_ratio = tz_labels.Probability.value_counts(normalize=True)
-    norm_factor = PREDICTION_NORM * threat_ratio[0]
 
     model = TsaNet()
     model.cuda()
@@ -45,8 +43,9 @@ def main(threat_zone):
         model.parameters(),
         lr=constants.LR,
         momentum=constants.MOMENTUM,
-        dampening=constants.DAMPENING,
-        weight_decay=constants.L2_PENALTY,
+        nesterov=True,
+        # dampening=constants.DAMPENING,
+        # weight_decay=constants.L2_PENALTY,
     )
 
     # load validation data
@@ -78,20 +77,21 @@ def main(threat_zone):
             images, target = Variable(images), Variable(target)
             optimizer.zero_grad()
             output = model(images)
+            print(output.sum().data[0])
             loss = F.binary_cross_entropy_with_logits(output, target.type(torch.cuda.FloatTensor))
             loss.backward()
             optimizer.step()
 
         # print validation accuracy
-        output_val = torch.sigmoid(model(validation_images)) / norm_factor
+        output_val = model(validation_images)
         print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.binary_cross_entropy(torch.sigmoid(output) / norm_factor, target.type(torch.cuda.FloatTensor)).data[0],
+            F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor)).data[0],
             F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
         print('Epoch {} train / validation MAE loss: {:.6f} / {:.6f}'.format(
             epoch,
-            F.l1_loss(torch.sigmoid(output) / norm_factor, target.type(torch.cuda.FloatTensor)).data[0],
+            F.l1_loss(output, target.type(torch.cuda.FloatTensor)).data[0],
             F.l1_loss(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
         print('Min / max validation prediction {:.3f} / {:.3f}'.format(

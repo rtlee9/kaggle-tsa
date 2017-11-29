@@ -183,12 +183,12 @@ def get_data_loaders(threat_zone):
     test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
-        keep_label_idx=label_idx_train,
+        keep_label_idx=label_idx_train[int(BATCH_SIZE / 2):BATCH_SIZE],
         blacklist=blacklist,
         transforms=transforms.Compose(train_transformations)
     )
     assert type(dataset_train.__getitem__(0)['image']) == torch.FloatTensor
-    assert (len(dataset_train) == 2206)
+    # assert (len(dataset_train) == 2206)
     assert (dataset_train.__getitem__(0))
     assert (dataset_train.__getitem__(len(dataset_train) - 1))
     targets = dataset_train.labels.Probability
@@ -200,9 +200,9 @@ def get_data_loaders(threat_zone):
     loader_train = DataLoader(
         dataset_train,
         num_workers=3,
-        # batch_size=BATCH_SIZE,
-        # shuffle=True,
-        batch_sampler=batch_sampler,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        # batch_sampler=batch_sampler,
     )
 
     # create loader for validation data
