@@ -86,6 +86,10 @@ def main(threat_zone):
             F.l1_loss(torch.sigmoid(output) / norm_factor, target.type(torch.cuda.FloatTensor)).data[0],
             F.l1_loss(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
         ))
+        print('Min / max validation prediction {:.3f} / {:.3f}'.format(
+            output_val.min().data[0],
+            output_val.max().data[0],
+        ))
 
     if config.verbose > 0:
         print('Training completed in {:.1f} minutes'.format((time.time() - t0) / 60))
