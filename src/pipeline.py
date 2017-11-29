@@ -93,6 +93,14 @@ class Resize(object):
         return resize(images, (32, 32, 32), mode='constant')
 
 
+class Filter(object):
+    """Image filter transformer."""
+
+    def __call__(self, image):
+        """Filter low intensity pixels from image."""
+        return image * (image > .05)
+
+
 class ConditionalRandomFlip(object):
     """ConditionalRandomFlip transformer."""
 
@@ -171,8 +179,8 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor()]  # training transformations
-    test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor()]  # base transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), Filter(), ToTensor()]  # training transformations
+    test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
