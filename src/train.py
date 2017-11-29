@@ -18,6 +18,13 @@ from .utils import get_labels
 from .constants import PREDICTION_NORM
 
 
+def adjust_learning_rate(optimizer, epoch):
+    """Set the learning rate to the initial LR decayed by 10 every 30 epochs."""
+    lr = constants.LR * (0.8 ** (epoch // 2))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+
 def hash_model(model):
     """Create hash representation of a model based on its __repr__."""
     hash_object = hashlib.sha1(bytes(str(model).encode('ascii')))
@@ -64,6 +71,7 @@ def main(threat_zone):
     model.train()
     t0 = time.time()
     for epoch in range(constants.N_EPOCHS):
+        adjust_learning_rate(optimizer, epoch)
         for data in tqdm(loader_train):
             images, target = data['image'], data['threat']
             images, target = images.cuda(), target.cuda()
