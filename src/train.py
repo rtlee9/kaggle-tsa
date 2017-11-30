@@ -70,6 +70,7 @@ def main(threat_zone):
     t0 = time.time()
     for epoch in range(constants.N_EPOCHS):
         adjust_learning_rate(optimizer, epoch)
+        epoch_loss = []
         for data in loader_train:
             images, target = data['image'], data['threat']
             images, target = images.cuda(), target.cuda()
@@ -77,6 +78,7 @@ def main(threat_zone):
             optimizer.zero_grad()
             output = model(images)
             loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
+            epoch_loss.append(loss.data[0])
             loss.backward()
             optimizer.step()
 
@@ -84,7 +86,7 @@ def main(threat_zone):
         output_val = model(validation_images)
         print('Epoch {} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
-            F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor)).data[0],
+            sum(epoch_loss) / len(epoch_loss),
             F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
             output.mean().data[0],
             output.min().data[0],
