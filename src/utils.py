@@ -64,3 +64,9 @@ def get_priors(zone_name='zone_num'):
     """Get baseline frequencies by threat zone."""
     labels = get_labels()
     return labels.groupby(zone_name).Probability.mean()
+
+
+def generate_submission(predictions, model_name):
+    """Generate submission CSV file from predictions Pandas series."""
+    predictions.name = 'Probability'
+    predictions.to_csv('submissions/{}.csv'.format(model_name), header=True, float_format='%.7f')
