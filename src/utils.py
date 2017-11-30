@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .config import path_labels, path_sample_submissions
+from .zones import left_right_map
 
 plt.rc('animation', html='html5')
 
@@ -54,6 +55,8 @@ def get_labels(type='labels'):
         labels = pd.read_csv(path_labels)
     labels['subject_id'] = labels.Id.str.split('_').str[0]
     labels['zone_num'] = labels.Id.str.split('Zone').str[1].astype(int)
+    labels['common_zone'] = labels.zone_num.map(
+        lambda zone: left_right_map.get(zone, zone))
     return labels
 
 

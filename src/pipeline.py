@@ -55,8 +55,6 @@ class TsaScansDataset(Dataset):
 
         # map to common zone (across left-right center) and filter
         common_zone = left_right_map.get(threat_zone, threat_zone)
-        labels['common_zone'] = labels.zone_num.map(
-            lambda zone: left_right_map.get(zone, zone))
         labels = labels[labels.common_zone == common_zone]
         self.labels = labels.set_index('subject_id')
         self.transforms = transforms
