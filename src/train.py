@@ -86,7 +86,7 @@ def main(threat_zone):
             # print validation accuracy
             output_val = model(validation_images)
             if config.verbose > 1:
-                print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
+                print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.3f} / {:.3f} / {:.3f}]'.format(
                     epoch,
                     batch_num,
                     loss.data[0],
