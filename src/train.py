@@ -33,9 +33,8 @@ def hash_model(model):
 def main(threat_zone):
     """Train threat zone specific model."""
     loader_train, loader_validation, loader_submission = get_data_loaders(threat_zone)
-    labels = get_labels()
-    tz_labels = labels[labels.zone_num == threat_zone]
-    threat_ratio = tz_labels.Probability.value_counts(normalize=True)
+    labels = loader_train.dataset.labels
+    threat_ratio = labels.Probability.value_counts(normalize=True)
 
     model = TsaNet()
     model.cuda()
@@ -61,7 +60,7 @@ def main(threat_zone):
 
     # baseline stats
     if config.verbose > 0:
-        print('{:.1f}% of labels are threat positive'.format(threat_ratio[1] * 100))
+        print('{:.1f}% of training labels are threat positive'.format(threat_ratio[1] * 100))
         print('Baseline guesses would yield {:.2f} BCE score'.format(
             F.binary_cross_entropy(Variable(torch.cuda.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio[1]), validation_targets.type(torch.cuda.FloatTensor)).data[0]
         ))
