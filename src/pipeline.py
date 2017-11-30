@@ -80,6 +80,8 @@ class TsaScansDataset(Dataset):
             image=image,
             threat=data.Probability,
             id=subject_idx,
+            zone=data.zone_num,
+            common_zone=data.common_zone,
         )
 
 

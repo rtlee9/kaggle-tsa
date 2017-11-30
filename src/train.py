@@ -50,7 +50,7 @@ def main(threat_zone):
     validation_data_loaded = [l for l in loader_validation]
     assert len(validation_data_loaded) == 1
     validation_data = validation_data_loaded[0]
-    assert len(validation_data) == 3
+    assert len(validation_data) == 5
 
     # load validation data into GPU memory
     validation_images, validation_targets = validation_data['image'], validation_data['threat']
