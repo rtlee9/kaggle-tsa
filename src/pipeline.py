@@ -183,7 +183,7 @@ def get_data_loaders(threat_zone):
     test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
-        keep_label_idx=label_idx_train[int(BATCH_SIZE / 2):BATCH_SIZE],
+        keep_label_idx=['9ec808303497389de113d609a65c7935'],
         blacklist=blacklist,
         transforms=transforms.Compose(train_transformations)
     )
