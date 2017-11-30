@@ -60,7 +60,7 @@ def get_labels(type='labels'):
     return labels
 
 
-def get_priors():
+def get_priors(zone_name='zone_num'):
     """Get baseline frequencies by threat zone."""
     labels = get_labels()
-    return labels.groupby('zone_num').Probability.mean()
+    return labels.groupby(zone_name).Probability.mean()
