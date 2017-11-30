@@ -4,7 +4,6 @@ import time
 from os import path
 import hashlib
 import argparse
-from tqdm import tqdm
 
 import torch
 import torch.nn.functional as F
@@ -71,20 +70,33 @@ def main(threat_zone):
     for epoch in range(constants.N_EPOCHS):
         adjust_learning_rate(optimizer, epoch)
         epoch_loss = []
-        for data in loader_train:
+        for batch_num, data in enumerate(loader_train):
             images, target = data['image'], data['threat']
             images, target = images.cuda(), target.cuda()
             images, target = Variable(images), Variable(target)
-            optimizer.zero_grad()
-            output = model(images)
-            loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
-            epoch_loss.append(loss.data[0])
-            loss.backward()
-            optimizer.step()
 
-        # print validation accuracy
-        output_val = model(validation_images)
-        print('Epoch {} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
+            for step_num in range(3):
+                optimizer.zero_grad()
+                output = model(images)
+                loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
+                loss.backward()
+                optimizer.step()
+
+            epoch_loss.append(loss.data[0])
+            # print validation accuracy
+            output_val = model(validation_images)
+            if config.verbose > 1:
+                print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
+                    epoch,
+                    batch_num,
+                    loss.data[0],
+                    F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+                    output.mean().data[0],
+                    output.min().data[0],
+                    output.max().data[0],
+                ))
+
+        print('Epoch {:2d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
             sum(epoch_loss) / len(epoch_loss),
             F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
