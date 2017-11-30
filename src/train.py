@@ -78,7 +78,7 @@ def main(threat_zone):
             optimizer.zero_grad()
             output = model(images)
             print(output.sum().data[0])
-            loss = F.binary_cross_entropy_with_logits(output, target.type(torch.cuda.FloatTensor))
+            loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
             loss.backward()
             optimizer.step()
 
