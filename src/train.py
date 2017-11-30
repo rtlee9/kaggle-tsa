@@ -87,7 +87,7 @@ def main(threat_zone):
             epoch,
             F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor)).data[0],
             F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
-            output.sum().data[0],
+            output.mean().data[0],
         ))
 
     if config.verbose > 0:
