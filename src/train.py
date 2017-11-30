@@ -82,20 +82,17 @@ def main(threat_zone):
 
         # print validation accuracy
         output_val = model(validation_images)
-        # print('Epoch {} train / validation log loss: {:.6f} / {:.6f}'.format(
-        print('Epoch {} train / validation log loss [mean prediction]:\t{:.6f} / {:.6f}\t[{:6f}]'.format(
+        print('Epoch {} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
             F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor)).data[0],
             F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
             output.mean().data[0],
+            output.min().data[0],
+            output.max().data[0],
         ))
 
     if config.verbose > 0:
         print('Training completed in {:.1f} minutes'.format((time.time() - t0) / 60))
-        print('Min / max validation prediction {:.3f} / {:.3f}'.format(
-            output_val.min().data[0],
-            output_val.max().data[0],
-        ))
 
     # save model state and description to disk
     model_name = 'TSA_net_{n}_opt_{opt}_epochs_{e}_lr_{lr}_momentum_{m}_l2_{l2}'.format(
