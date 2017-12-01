@@ -2,6 +2,7 @@
 import tsahelper.tsahelper as tsa
 import matplotlib.pyplot as plt
 from matplotlib import animation
+import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
 
@@ -70,3 +71,26 @@ def generate_submission(predictions, model_name):
     """Generate submission CSV file from predictions Pandas series."""
     predictions.name = 'Probability'
     predictions.to_csv('submissions/{}.csv'.format(model_name), header=True, float_format='%.7f')
+
+
+def get_random_subject_id(labels):
+    """Draw a random subject id from the labels dataset."""
+    return labels.sample(1).iloc[0].subject_id
+
+
+def plot_crop_boundaries(image, dims):
+    """Plot an image and overlay it with a box representing crop dimensions."""
+    width0 = dims[0][1] - dims[0][0]
+    width1 = dims[1][1] - dims[1][0]
+
+    # Create figure and axes
+    fig, ax = plt.subplots(1)
+
+    # Display the image
+    ax.imshow(np.flipud(image))
+
+    # Create a rectangle patch and add to axis
+    rect = patches.Rectangle((dims[1][0], 128 - dims[0][1]), width1, width0, linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+
+    plt.show()

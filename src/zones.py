@@ -24,6 +24,14 @@ image_dims = (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM)
 common_threat_body_map = {
     16: crop_dims(image_dims, top=25, left=65, right=105),
     14: crop_dims(image_dims, top=30, bottom=15, left=65, right=105),
+    12: crop_dims(image_dims, top=40, bottom=25, left=60, right=100),
+    10: crop_dims(image_dims, top=70, bottom=33, left=60, right=105),
+    7: crop_dims(image_dims, top=85, bottom=57, left=55, right=105),
+    3: crop_dims(image_dims, top=115, bottom=80, left=76, right=126),
+    4: crop_dims(image_dims, bottom=83, left=70, right=126),
+    9: crop_dims(image_dims, top=70, bottom=33, left=49, right=74),
+    5: crop_dims(image_dims, top=100, bottom=65, left=30, right=98, back=94),
+    17: crop_dims(image_dims, top=100, bottom=65, left=30, right=98, front=75),
 }
 
 
