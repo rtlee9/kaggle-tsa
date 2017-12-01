@@ -12,10 +12,12 @@ class TsaNet(nn.Module):
         self.features = nn.Sequential(  # initial torch.Size([1, 1, 32, 32, 32])
 
             nn.Conv3d(1, 64, kernel_size=3, stride=1, padding=2),
+            nn.BatchNorm3d(64),
             nn.ReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
             nn.Conv3d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm3d(64),
             nn.ReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
