@@ -14,7 +14,6 @@ from torch.autograd import Variable
 from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
-from .utils import get_labels
 
 
 def adjust_learning_rate(optimizer, epoch):
