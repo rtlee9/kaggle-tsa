@@ -199,7 +199,7 @@ def get_data_loaders(threat_zone):
     batch_sampler = torch.utils.data.sampler.BatchSampler(weighted_sampler, BATCH_SIZE, drop_last=False)
     loader_train = DataLoader(
         dataset_train,
-        num_workers=3,
+        num_workers=4,
         batch_size=BATCH_SIZE,
         shuffle=True,
         # batch_sampler=batch_sampler,
