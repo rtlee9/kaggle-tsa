@@ -142,7 +142,7 @@ class RandomRotation(object):
     def __call__(self, image):
         """Rotate image by by a random degree around specified axes."""
         rotation = np.random.uniform(*self.range)
-        return ndimage.rotate(image, rotation, self.axes, reshape=False)
+        return ndimage.rotate(image, rotation, self.axes, reshape=False, mode='reflect')
 
 
 class RandomShear(object):
@@ -158,7 +158,7 @@ class RandomShear(object):
         matrix = np.eye(3)
         shear_factor = np.random.uniform(*self.range)
         matrix[1, 0] = shear_factor
-        return ndimage.affine_transform(image, matrix)
+        return ndimage.affine_transform(image, matrix, mode='reflect')
 
 
 class ToTensor(object):
