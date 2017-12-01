@@ -17,8 +17,8 @@ from .model import TsaNet
 
 
 def adjust_learning_rate(optimizer, epoch):
-    """Set the learning rate to the initial LR decayed by 10 every 30 epochs."""
-    lr = constants.LR * (0.8 ** (epoch // 2))
+    """Decay the learning rate after the epoch doubles."""
+    lr = constants.LR * (0.6 ** (epoch // 1))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
