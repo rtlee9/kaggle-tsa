@@ -84,7 +84,8 @@ def main(threat_zone):
 
             epoch_loss.append(loss.data[0])
             # print validation accuracy
-            output_val = model(validation_images) * threat_ratio_val[1] / threat_ratio[1]  # adjust validation output to account for threat ratio mismatch
+            output_val = model(validation_images)
+            output_val = (output_val * threat_ratio_val[1] / threat_ratio[1]).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
             if config.verbose > 1:
                 print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.3f} / {:.3f} / {:.3f}]'.format(
                     epoch,
