@@ -32,8 +32,8 @@ def hash_model(model):
 def main(threat_zone):
     """Train threat zone specific model."""
     loader_train, loader_validation, loader_submission = get_data_loaders(threat_zone)
-    labels = loader_train.dataset.labels
-    threat_ratio = labels.Probability.value_counts(normalize=True)
+    threat_ratio = loader_train.dataset.labels.Probability.value_counts(normalize=True)
+    threat_ratio_val = loader_validation.dataset.labels.Probability.value_counts(normalize=True)
 
     model = TsaNet()
     model.cuda()
@@ -84,7 +84,7 @@ def main(threat_zone):
 
             epoch_loss.append(loss.data[0])
             # print validation accuracy
-            output_val = model(validation_images)
+            output_val = model(validation_images) * threat_ratio_val[1] / threat_ratio[1]  # adjust validation output to account for threat ratio mismatch
             if config.verbose > 1:
                 print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.3f} / {:.3f} / {:.3f}]'.format(
                     epoch,
