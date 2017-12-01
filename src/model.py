@@ -27,6 +27,16 @@ class TsaNet(nn.Module):
             nn.Sigmoid(),
         )
 
+        # weight initialization
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                gain = nn.init.calculate_gain('relu')
+                nn.init.xavier_normal(m.weight, gain=gain)
+                nn.init.constant(m.bias, 0.1)
+            elif isinstance(m, nn.BatchNorm3d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
     def forward(self, x):
         """Net forward pass."""
         x = self.features(x)
