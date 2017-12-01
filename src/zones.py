@@ -23,6 +23,7 @@ right_left_map = {v: k for k, v in left_right_map.items()}
 image_dims = (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM)
 common_threat_body_map = {
     16: crop_dims(image_dims, top=25, left=65, right=105),
+    14: crop_dims(image_dims, top=30, bottom=15, left=65, right=105),
 }
 
 
