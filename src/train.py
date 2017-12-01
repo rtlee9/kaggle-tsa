@@ -4,6 +4,7 @@ import time
 from os import path
 import hashlib
 import argparse
+from tqdm import tqdm
 
 import torch
 import torch.nn.functional as F
@@ -70,7 +71,7 @@ def main(threat_zone):
     for epoch in range(constants.N_EPOCHS):
         adjust_learning_rate(optimizer, epoch)
         epoch_loss = []
-        for batch_num, data in enumerate(loader_train):
+        for batch_num, data in enumerate(tqdm(loader_train)):
             images, target = data['image'], data['threat']
             images, target = images.cuda(), target.cuda()
             images, target = Variable(images), Variable(target)
