@@ -191,18 +191,11 @@ def get_data_loaders(threat_zone):
     assert (len(dataset_train) == 2206)
     assert (dataset_train.__getitem__(0))
     assert (dataset_train.__getitem__(len(dataset_train) - 1))
-    targets = dataset_train.labels.Probability
-    classes = np.sort(np.unique(targets))
-    class_weights = {cls: CLASS_WEIGHTS[cls] for cls in classes}
-    weights = targets.map(lambda cls: class_weights[cls]).values
-    weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights.tolist(), len(weights))
-    batch_sampler = torch.utils.data.sampler.BatchSampler(weighted_sampler, BATCH_SIZE, drop_last=False)
     loader_train = DataLoader(
         dataset_train,
         num_workers=4,
-        # batch_size=BATCH_SIZE,
-        # shuffle=True,
-        batch_sampler=batch_sampler,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
     )
 
     # create loader for validation data
