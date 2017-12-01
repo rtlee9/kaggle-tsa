@@ -200,9 +200,9 @@ def get_data_loaders(threat_zone):
     loader_train = DataLoader(
         dataset_train,
         num_workers=4,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        # batch_sampler=batch_sampler,
+        # batch_size=BATCH_SIZE,
+        # shuffle=True,
+        batch_sampler=batch_sampler,
     )
 
     # create loader for validation data
