@@ -29,7 +29,7 @@ def get_blacklist():
         (crop_records_df[0] < 500) | (crop_records_df[1] < 400) | (crop_records_df[2] < 100),
         1, 0
     )
-    if config.verbose > 0:
+    if config.verbose > 1:
         print('Blacklisting {:,} subjects due to bad cropping'.format(crop_records_df['blacklist'].value_counts(sort=False)[1]))
     return crop_records_df[crop_records_df.blacklist == 1].index.values
 
