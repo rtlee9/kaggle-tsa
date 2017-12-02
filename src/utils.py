@@ -5,6 +5,7 @@ from matplotlib import animation
 import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
+from scipy.ndimage import convolve
 
 from .config import path_labels, path_sample_submissions
 from .zones import left_right_map
@@ -90,7 +91,23 @@ def plot_crop_boundaries(image, dims):
     ax.imshow(np.flipud(image))
 
     # Create a rectangle patch and add to axis
-    rect = patches.Rectangle((dims[1][0], 128 - dims[0][1]), width1, width0, linewidth=1, edgecolor='r', facecolor='none')
+    rect = patches.Rectangle((dims[1][0], image.shape[0] - dims[0][1]), width1, width0, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
 
     plt.show()
+
+
+def plot_line(np_array):
+    """Plot a numpy array as a line."""
+    pd.Series(np_array).plot.line()
+    plt.show()
+
+
+def moving_average(a, n):
+    """Return the moving average series of a with kernel size n."""
+    return convolve(a, np.ones(n))
+
+
+def derivative(a, n):
+    """Return the first derivative of series a with kernel size n."""
+    return a - np.roll(a, n)

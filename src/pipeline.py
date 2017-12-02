@@ -168,7 +168,15 @@ class ToTensor(object):
         """Convert to float tensor and add two dimensions:
         one for the number of images and the other for initial chanels (no RGB, so this is 1).
         """
-        return torch.from_numpy(image).type(torch.FloatTensor).unsqueeze(0) * 2 - .25
+        return torch.from_numpy(image).type(torch.FloatTensor).unsqueeze(0)
+
+
+class MeanVariance(object):
+    """Remove mean and variance."""
+
+    def __call__(self, image):
+        """Remove mean and variance."""
+        return image / 255 - .5
 
 
 def get_data_loaders(threat_zone):
@@ -179,8 +187,8 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), Filter(), ToTensor()]  # training transformations
-    test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor()]  # base transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), Filter(), ToTensor(), MeanVariance()]  # training transformations
+    test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor(), MeanVariance()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
