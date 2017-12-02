@@ -187,9 +187,6 @@ def get_data_loaders(threat_zone):
         blacklist=blacklist,
         transforms=transforms.Compose(train_transformations)
     )
-    assert type(dataset_train.__getitem__(0)['image']) == torch.FloatTensor
-    assert (dataset_train.__getitem__(0))
-    assert (dataset_train.__getitem__(len(dataset_train) - 1))
     loader_train = DataLoader(
         dataset_train,
         num_workers=4,
@@ -223,7 +220,5 @@ def get_data_loaders(threat_zone):
         shuffle=False,
         num_workers=3,
     )
-    assert len(loader_submission.dataset) == 100 * 2
-    assert len(loader_submission) == np.ceil(100 * 2 / BATCH_SIZE).astype(int)
 
     return loader_train, loader_validation, loader_submission
