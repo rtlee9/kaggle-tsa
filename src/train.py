@@ -32,8 +32,8 @@ def hash_model(model):
 def main(threat_zone):
     """Train threat zone specific model."""
     loader_train, loader_validation, loader_submission = get_data_loaders(threat_zone)
-    threat_ratio = loader_train.dataset.labels.Probability.value_counts(normalize=True)
-    threat_ratio_val = loader_validation.dataset.labels.Probability.value_counts(normalize=True)
+    threat_ratio = loader_train.dataset.labels.Probability.value_counts(normalize=True)[1]
+    threat_ratio_val = loader_validation.dataset.labels.Probability.value_counts(normalize=True)[1]
 
     model = TsaNet()
     model.cuda()
@@ -59,9 +59,9 @@ def main(threat_zone):
 
     # baseline stats
     if config.verbose > 0:
-        print('{:.1f}% of training labels are threat positive'.format(threat_ratio[1] * 100))
-        print('Baseline guesses would yield {:.2f} BCE score'.format(
-            F.binary_cross_entropy(Variable(torch.cuda.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio[1]), validation_targets.type(torch.cuda.FloatTensor)).data[0]
+        print('{:.1f}% of training labels are threat positive ({:.1f}% validation)'.format(threat_ratio * 100, threat_ratio_val * 100))
+        print('Baseline guesses would yield {:.2f} BCE validation score'.format(
+            F.binary_cross_entropy(Variable(torch.cuda.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio), validation_targets.type(torch.cuda.FloatTensor)).data[0]
         ))
 
     # train model
@@ -86,7 +86,6 @@ def main(threat_zone):
             # print validation accuracy
             model.eval()
             output_val = model(validation_images)
-            output_val = (output_val * threat_ratio_val[1] / threat_ratio[1]).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
             bse_val = F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0]
             model.train()
             if config.verbose > 1:
@@ -99,9 +98,10 @@ def main(threat_zone):
                     output.min().data[0],
                     output.max().data[0],
                 ))
+            output_val = (output_val * threat_ratio_val / threat_ratio).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
 
         # decay learning rate if validation performance worsens
-        if len(val_hist) > 0 and bse_val > val_hist[-1]:
+        if len(val_hist) > 0 and bce_val > val_hist[-1]:
             drop_learning_rate(optimizer)
         val_hist.append(bse_val)  # append current validation performance to history
         print('Epoch {:2d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
