@@ -16,7 +16,7 @@ from skimage.transform import resize
 from . import config
 from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
-from .constants import BATCH_SIZE, CLASS_WEIGHTS, TRAIN_TEST_SPLIT_RATIO
+from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO
 from .crop import hard_crop
 
 
