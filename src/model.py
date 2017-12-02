@@ -52,6 +52,6 @@ class TsaNet(nn.Module):
     def forward(self, x):
         """Net forward pass."""
         x = self.features(x)
-        x = x.view(x.size(0), 64 * 8 ** 3)
+        x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3) * x.size(4))
         x = self.classifier(x)
         return x.squeeze()
