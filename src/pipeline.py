@@ -16,7 +16,7 @@ from skimage.transform import resize
 from . import config
 from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
-from .constants import BATCH_SIZE, CLASS_WEIGHTS
+from .constants import BATCH_SIZE, CLASS_WEIGHTS, TRAIN_TEST_SPLIT_RATIO
 from .crop import hard_crop
 
 
@@ -175,7 +175,7 @@ def get_data_loaders(threat_zone):
     """Get train, validation, and submission loaders."""
     # create train / validation split
     subject_idx = get_labels().subject_id.unique()
-    label_idx_train, label_idx_validation = train_test_split(subject_idx, test_size=.01, random_state=0)
+    label_idx_train, label_idx_validation = train_test_split(subject_idx, test_size=TRAIN_TEST_SPLIT_RATIO, random_state=0)
 
     # create loader for training data
     blacklist = get_blacklist()
@@ -188,7 +188,6 @@ def get_data_loaders(threat_zone):
         transforms=transforms.Compose(train_transformations)
     )
     assert type(dataset_train.__getitem__(0)['image']) == torch.FloatTensor
-    assert (len(dataset_train) == 2206)
     assert (dataset_train.__getitem__(0))
     assert (dataset_train.__getitem__(len(dataset_train) - 1))
     loader_train = DataLoader(
