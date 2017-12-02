@@ -46,22 +46,13 @@ def main(threat_zone):
         weight_decay=constants.L2_PENALTY,
     )
 
-    # load validation data
-    validation_data_loaded = [l for l in loader_validation]
-    assert len(validation_data_loaded) == 1
-    validation_data = validation_data_loaded[0]
-    assert len(validation_data) == 5
-
-    # load validation data into GPU memory
-    validation_images, validation_targets = validation_data['image'], validation_data['threat']
-    validation_images, validation_targets = validation_images.cuda(), validation_targets.cuda()
-    validation_images, validation_targets = Variable(validation_images), Variable(validation_targets)
-
-    # baseline stats
+    # baseline_status
+    validation_targets = torch.cat([l['threat'] for l in loader_validation])
+    validation_targets = Variable(validation_targets)
     if config.verbose > 0:
         print('{:.1f}% of training labels are threat positive ({:.1f}% validation)'.format(threat_ratio * 100, threat_ratio_val * 100))
         print('Baseline guesses would yield {:.2f} BCE validation score'.format(
-            F.binary_cross_entropy(Variable(torch.cuda.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio), validation_targets.type(torch.cuda.FloatTensor)).data[0]
+            F.binary_cross_entropy(Variable(torch.FloatTensor(len(validation_targets)).fill_(1) * threat_ratio), validation_targets.type(torch.FloatTensor)).data[0]
         ))
 
     # train model
@@ -83,31 +74,33 @@ def main(threat_zone):
                 optimizer.step()
 
             epoch_loss.append(loss.data[0])
-            # print validation accuracy
-            model.eval()
+
+        # calculate validation accuracy
+        model.eval()
+        bce_values = torch.cuda.FloatTensor()
+        for validation_data in loader_validation:
+            # load validation data into GPU memory
+            validation_images, validation_targets = validation_data['image'], validation_data['threat']
+            validation_images, validation_targets = validation_images.cuda(), validation_targets.cuda()
+            validation_images, validation_targets = Variable(validation_images), Variable(validation_targets)
             output_val = model(validation_images)
-            bse_val = F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0]
-            model.train()
-            if config.verbose > 1:
-                print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.3f} / {:.3f} / {:.3f}]'.format(
-                    epoch,
-                    batch_num,
-                    loss.data[0],
-                    bse_val,
-                    output.mean().data[0],
-                    output.min().data[0],
-                    output.max().data[0],
-                ))
             output_val = (output_val * threat_ratio_val / threat_ratio).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
+            bce_values = torch.cat((bce_values, F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data))
+        bce_val = bce_values.mean()
+        del validation_images, validation_targets, bce_values, output_val
+        model.train()
 
         # decay learning rate if validation performance worsens
         if len(val_hist) > 0 and bce_val > val_hist[-1]:
             drop_learning_rate(optimizer)
-        val_hist.append(bse_val)  # append current validation performance to history
+
+        # append current validation performance to history
+        val_hist.append(bce_val)
+
         print('Epoch {:2d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
             sum(epoch_loss) / len(epoch_loss),
-            F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+            bce_val,
             output.mean().data[0],
             output.min().data[0],
             output.max().data[0],

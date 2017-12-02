@@ -207,7 +207,7 @@ def get_data_loaders(threat_zone):
     )
     loader_validation = DataLoader(
         dataset_validation,
-        batch_size=len(label_idx_validation) * 2,
+        batch_size=16,
         shuffle=False,
         num_workers=3,
     )
