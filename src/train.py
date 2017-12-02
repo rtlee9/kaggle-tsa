@@ -16,11 +16,11 @@ from .pipeline import get_data_loaders
 from .model import TsaNet
 
 
-def adjust_learning_rate(optimizer, epoch):
-    """Decay the learning rate after the epoch doubles."""
-    lr = constants.LR * (0.6 ** (epoch // 1))
+def drop_learning_rate(optimizer, decay_factor=.4):
+    """Decay the learning rate manually."""
     for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+        param_group['lr'] = param_group['lr'] * decay_factor
+        print('Learning rate decreased to {:.2e}'.format(param_group['lr']))
 
 
 def hash_model(model):
@@ -67,8 +67,8 @@ def main(threat_zone):
     # train model
     model.train()
     t0 = time.time()
+    val_hist = []
     for epoch in range(constants.N_EPOCHS):
-        adjust_learning_rate(optimizer, epoch)
         epoch_loss = []
         for batch_num, data in enumerate(tqdm(loader_train)):
             images, target = data['image'], data['threat']
@@ -87,18 +87,23 @@ def main(threat_zone):
             model.eval()
             output_val = model(validation_images)
             output_val = (output_val * threat_ratio_val[1] / threat_ratio[1]).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
+            bse_val = F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0]
             model.train()
             if config.verbose > 1:
                 print('Epoch {:2d}.{:02d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.3f} / {:.3f} / {:.3f}]'.format(
                     epoch,
                     batch_num,
                     loss.data[0],
-                    F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data[0],
+                    bse_val,
                     output.mean().data[0],
                     output.min().data[0],
                     output.max().data[0],
                 ))
 
+        # decay learning rate if validation performance worsens
+        if len(val_hist) > 0 and bse_val > val_hist[-1]:
+            drop_learning_rate(optimizer)
+        val_hist.append(bse_val)  # append current validation performance to history
         print('Epoch {:2d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
             sum(epoch_loss) / len(epoch_loss),
