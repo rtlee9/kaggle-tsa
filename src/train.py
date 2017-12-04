@@ -5,6 +5,7 @@ from os import path
 import hashlib
 import argparse
 from tqdm import tqdm
+import json
 
 import torch
 import torch.nn.functional as F
@@ -14,6 +15,7 @@ from torch.autograd import Variable
 from . import config, constants
 from .pipeline import get_data_loaders
 from .model import TsaNet
+from .utils import get_run_details
 
 
 def drop_learning_rate(optimizer, decay_factor=.4):
@@ -23,9 +25,9 @@ def drop_learning_rate(optimizer, decay_factor=.4):
         print('Learning rate decreased to {:.2e}'.format(param_group['lr']))
 
 
-def hash_model(model):
-    """Create hash representation of a model based on its __repr__."""
-    hash_object = hashlib.sha1(bytes(str(model).encode('ascii')))
+def hash_plaintext(plaintext):
+    """Create hash representation of a plaintext string."""
+    hash_object = hashlib.sha1(bytes(plaintext.encode('ascii')))
     return hash_object.hexdigest()
 
 
@@ -110,16 +112,24 @@ def main(threat_zone):
         print('Training completed in {:.1f} minutes'.format((time.time() - t0) / 60))
 
     # save model state and description to disk
-    model_name = 'TSA_net_{n}_opt_{opt}_epochs_{e}_lr_{lr}_momentum_{m}_l2_{l2}'.format(
-        n=hash_model(model),
-        e=epoch + 1,
-        opt=str(type(optimizer)).split('.')[-1].split("'")[0],
-        lr=constants.LR,
-        m=constants.MOMENTUM,
-        l2=constants.L2_PENALTY,
+    run_details = get_run_details(
+        model,
+        optimizer,
+        val_hist,
+        specifications=dict(
+            batch_size=constants.BATCH_SIZE,
+            n_epochs=epoch + 1,
+            train_test_split=constants.TRAIN_TEST_SPLIT_RATIO,
+            image_dim=constants.IMAGE_DIM,
+        ))
+    model_hash = hash_plaintext(json.dumps(run_details))
+    model_name = 'tz{tz:3d}_{v:.3f}_{n}'.format(
+        tz=threat_zone,
+        v=bce_val,
+        n=model_hash,
     )
     torch.save(model.state_dict(), path.join(config.path_model, model_name))
-    with open(path.join(config.path_model, hash_model(model) + '.txt'), 'w') as f:
+    with open(path.join(config.path_model, model_hash + '.txt'), 'w') as f:
         f.write(str(model))
 
 if __name__ == '__main__':

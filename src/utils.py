@@ -111,3 +111,35 @@ def moving_average(a, n):
 def derivative(a, n):
     """Return the first derivative of series a with kernel size n."""
     return a - np.roll(a, n)
+
+
+def get_model_structure(model):
+    """Return JSON serialized model structure."""
+    # TODO: recurse model tree -- don't assume two layers
+    return [[str(c) for c in p] for p in model.named_children()]
+
+
+def get_component_details(model, structure_parser):
+    """Return JOSN representation of a PyTorch model."""
+    return dict(
+        type=type(model).__name__,
+        structure=structure_parser(model),
+    )
+
+
+def get_hyperparameters(optimizer):
+    """Get hyperparameters from PyTorch object."""
+    desc_keys = [k for k in optimizer.param_groups[0].keys() if k != 'params']
+    desc = [{k: p[k] for k in desc_keys} for p in optimizer.param_groups]
+    return desc
+
+
+def get_run_details(model, optimizer, validation_loss=[], training_loss=[], specifications={}):
+    """Get serializable training run details."""
+    return dict(
+        model=get_component_details(model, get_model_structure),
+        optimizer=get_component_details(optimizer, get_hyperparameters),
+        validation_loss=validation_loss,
+        training_loss=training_loss,
+        **specifications
+    )
