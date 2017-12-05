@@ -12,7 +12,7 @@ from .constants import IMAGE_DIM
 from .utils import save_image, get_labels, moving_average, plot_line
 
 
-def find_edges(a, plot_distr=False):
+def find_edges(a, buffer=0, plot_distr=False):
     """Find the edges of a series."""
     ma = moving_average(a, 10)
     f = ma > 10000
@@ -25,10 +25,10 @@ def find_edges(a, plot_distr=False):
         lower = 0
     if f[-1]:
         upper = f.shape[0]
-    return lower, upper
+    return max(lower - buffer, 0), min(upper + buffer, f.shape[0])
 
 
-def crop_image(image):
+def crop_image(image, buffer=0):
     """Find the edges of a TSA scan along each dimension and return the cropped image."""
     convolved = convolve(image, np.ones((2, 2, 2)))
     filtered = (convolved * (convolved > 250))
@@ -38,9 +38,9 @@ def crop_image(image):
     s2 = filtered.sum(axis=0).sum(axis=0)
 
     # borders for each dimension
-    bottom, top = find_edges(s0)
-    left, right = find_edges(s1)
-    front, back = find_edges(s2)
+    bottom, top = find_edges(s0, buffer)
+    left, right = find_edges(s1, buffer)
+    front, back = find_edges(s2, buffer)
 
     resized_image = image[:top, left:right, front:back]
     if verbose > 1:
