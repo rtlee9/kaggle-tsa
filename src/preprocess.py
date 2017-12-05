@@ -7,6 +7,7 @@ import tsahelper.tsahelper as tsa
 from tqdm import tqdm
 import torch
 from torch import nn
+from torch.autograd import Variable
 
 from .config import path_a3d, path_cache, verbose, path_plots, path_logs
 from .constants import IMAGE_DIM
@@ -32,13 +33,13 @@ def find_edges(a, buffer=0, plot_distr=False):
 def reverse_tensor(t):
     """Reverse tensor t."""
     dim = len(t.size()) - 1
-    return t.index_select(dim, torch.cuda.LongTensor(range(t.size(dim) - 1, -1, -1)))
+    tv = Variable(torch.cuda.LongTensor(range(t.size(dim) - 1, -1, -1)))
+    return t.index_select(dim, tv)
 
 
 def crop_image(image, buffer=0):
     """Find the edges of a TSA scan along each dimension and return the cropped image."""
-    image = image.transpose(2, 0, 1)  # axis are now height (top) x width (side) x  depth (front)
-    timg = rescale(torch.from_numpy(image).cuda())
+    timg = rescale(Variable(image))
     avg_pool = nn.AvgPool3d(2, 1, )
     convolved = avg_pool(timg.unsqueeze(0)) * 2 ** 3  # convert to sum pool
     convolved = convolved.squeeze()
@@ -73,16 +74,11 @@ def preprocess_tsa_data(type='labels'):
     crop_log = {}
     for subject_id in tqdm(scans.subject_id.unique()):
         image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
-        cropped_image = crop_image(torch.from_numpy(image).cuda(), buffer=5)
+        image = image.transpose(2, 0, 1)  # axis are now height (top) x width (side) x  depth (front)
+        cropped_image = crop_image(torch.from_numpy(image).cuda(), buffer=5).cpu().numpy()
         resized_image = resize(cropped_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
         np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
         crop_log[subject_id] = cropped_image.shape
-
-        # save a cross section for validating cropping
-        save_image(
-            path.join(path_plots, subject_id + '.png'),
-            tsa.convert_to_grayscale(resized_image)[:, :, np.floor(resized_image.shape[2] / 2).astype(int) - 5],
-        )
 
     with open(path.join(path_logs, 'crop_log_{}.json'.format(type)), 'w') as f:
         json.dump(crop_log, f, indent=4)
