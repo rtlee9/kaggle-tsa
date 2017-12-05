@@ -90,7 +90,7 @@ class Resize(object):
 
     def __call__(self, images):
         """Downsample image for modeling."""
-        return resize(images, (32, 32, 32), mode='constant')
+        return resize(images, (64, 64, 64), mode='constant')
 
 
 class Filter(object):
