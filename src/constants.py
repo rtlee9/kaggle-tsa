@@ -2,7 +2,7 @@
 
 # preprocessing constants
 TRAIN_TEST_SPLIT_RATIO = 0.03
-IMAGE_DIM = 128
+IMAGE_DIM = 256
 CROP_LOG_INTERVAL = 20
 
 # training constants
