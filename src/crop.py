@@ -17,6 +17,10 @@ def hard_crop(image, crop_boundaries):
     for boundary_set in crop_boundaries:
         assert(len(boundary_set)) == 2
 
+    scale = image.shape[0] / 128
+    crop_boundaries = [
+        [int(crop_edge * scale) for crop_edge in crop_dim]
+        for crop_dim in crop_boundaries]
     cropped_image = image[
         crop_boundaries[0][0]:crop_boundaries[0][1],
         crop_boundaries[1][0]:crop_boundaries[1][1],
