@@ -1,5 +1,5 @@
 """Configuration variables for TSA challenge."""
-from os import path
+from os import path, getenv
 
 
 # define paths
@@ -16,7 +16,7 @@ path_sample_submissions = path.join(path_data, 'stage1_sample_submission.csv')
 path_aps = path.join(path_data, 'aps')
 path_labels = path.join(path_data, 'stage1_labels.csv')
 
-path_external_storage = '/mnt/hdd/data/'
+path_external_storage = getenv('EXTERNAL_STORAGE')
 path_a3d = path.join(path_external_storage, 'a3d')
 
 # define run settings
