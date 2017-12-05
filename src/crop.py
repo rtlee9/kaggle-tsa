@@ -5,9 +5,7 @@ import numpy as np
 def hard_crop(image, crop_boundaries):
     """Crop image based on pixel boundaries."""
     # input sanity checks
-    expected_dims = np.array([(boundary[1] - boundary[0]) for boundary in crop_boundaries])
     assert len(crop_boundaries) == 3
-    assert np.all(expected_dims > 0)
 
     # check input has has three sets of two boundaries
     for boundary_set in crop_boundaries:
@@ -17,15 +15,13 @@ def hard_crop(image, crop_boundaries):
     for boundary_set in crop_boundaries:
         assert(len(boundary_set)) == 2
 
-    scale = image.shape[0] / 128
-    crop_boundaries = [
-        [int(crop_edge * scale) for crop_edge in crop_dim]
-        for crop_dim in crop_boundaries]
     cropped_image = image[
         crop_boundaries[0][0]:crop_boundaries[0][1],
         crop_boundaries[1][0]:crop_boundaries[1][1],
         crop_boundaries[2][0]:crop_boundaries[2][1],
     ]
+    expected_dims = np.array([(boundary[1] - boundary[0]) for boundary in crop_boundaries])
+    assert np.all(expected_dims > 0)
     assert sum(cropped_image.shape) == expected_dims.sum()
     return cropped_image
 
@@ -38,19 +34,20 @@ def test_hard_crop():
 
 def crop_dims(image_dims, top=None, bottom=None, left=None, right=None, front=None, back=None):
     """Get crop dimensions from base image dimensions and additional constraints."""
+    scale = image_dims[0] // 128  # crop zones are expressed on 128 scale  # TODO: look at all image dims
     cropped_dims = [[0, image_dims[0]], [0, image_dims[1]], [0, image_dims[2]]]
     if bottom:
-        cropped_dims[0][0] = bottom
+        cropped_dims[0][0] = bottom * scale
     if top:
-        cropped_dims[0][1] = top
+        cropped_dims[0][1] = top * scale
     if left:
-        cropped_dims[1][0] = left
+        cropped_dims[1][0] = left * scale
     if right:
-        cropped_dims[1][1] = right
+        cropped_dims[1][1] = right * scale
     if front:
-        cropped_dims[2][0] = front
+        cropped_dims[2][0] = front * scale
     if back:
-        cropped_dims[2][1] = back
+        cropped_dims[2][1] = back * scale
     return cropped_dims
 
 
