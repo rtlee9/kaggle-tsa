@@ -73,7 +73,7 @@ def preprocess_tsa_data(type='labels'):
     crop_log = {}
     for subject_id in tqdm(scans.subject_id.unique()):
         image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
-        cropped_image = crop_image(torch.from_numpy(image).cuda())
+        cropped_image = crop_image(torch.from_numpy(image).cuda(), buffer=5)
         resized_image = resize(cropped_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
         np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
         crop_log[subject_id] = cropped_image.shape
