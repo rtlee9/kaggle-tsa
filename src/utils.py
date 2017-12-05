@@ -5,7 +5,7 @@ from matplotlib import animation
 import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
-from scipy.ndimage import convolve
+from torch import nn
 
 from .config import path_labels, path_sample_submissions
 from .zones import left_right_map
@@ -103,9 +103,10 @@ def plot_line(np_array):
     plt.show()
 
 
-def moving_average(a, n):
+def moving_average(t, n):
     """Return the moving average series of a with kernel size n."""
-    return convolve(a, np.ones(n))
+    ma = nn.AvgPool1d(n - 1, stride=1, padding=4)
+    return ma(t.unsqueeze(0).unsqueeze(0)).squeeze()
 
 
 def derivative(a, n):
