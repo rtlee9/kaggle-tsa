@@ -2,6 +2,7 @@
 
 import argparse
 from os import path
+from tqdm import tqdm
 
 import torch
 from torch.autograd import Variable
@@ -25,7 +26,7 @@ def main(submission_name):
         model_list = f.read().split('\n')
     model_list = [m for m in model_list if m != '']  # filter out blank lines
 
-    for model_name in model_list:
+    for model_name in tqdm(model_list):
 
         model_filename = path.join(path_model, model_name)
         threat_zone = int(model_name.split('tz')[1].split('_')[0])
