@@ -123,8 +123,8 @@ def main(threat_zone):
             image_dim=constants.IMAGE_DIM,
         ))
     model_hash = hash_plaintext(json.dumps(run_details))
-    model_name = 'tz{tz:3d}_{v:.3f}_{n}'.format(
-        tz=threat_zone,
+    model_name = 'tz{tz:}_{v:.3f}_{n}'.format(
+        tz=str(threat_zone).zfill(2),
         v=bce_val,
         n=model_hash,
     )
