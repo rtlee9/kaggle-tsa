@@ -10,4 +10,9 @@ all: .make/preprocess .make/train .make/submission
 	python -m src.train -Z 12
 	python -m src.train -Z 10
 	python -m src.train -Z 7
+	python -m src.train -Z 3
+	python -m src.train -Z 4
+	python -m src.train -Z 9
+	python -m src.train -Z 5
+	python -m src.train -Z 17
 	touch .make/train
