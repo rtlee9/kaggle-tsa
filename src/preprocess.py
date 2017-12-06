@@ -86,7 +86,7 @@ def crop_image(image, buffer=0):
     avg_pool = nn.AvgPool3d(2, 1, )
     convolved = avg_pool(timg) * 2 ** 3  # convert to sum pool
     convolved = convolved.squeeze()
-    filtered = (convolved * (convolved > 250).type(torch.cuda.DoubleTensor))
+    filtered = (convolved * (convolved > 250).type(torch.cuda.FloatTensor))
 
     s0 = filtered.sum(dim=2).sum(dim=2)
     s1 = filtered.sum(dim=1).sum(dim=2)
