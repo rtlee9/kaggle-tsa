@@ -103,17 +103,6 @@ def plot_line(np_array):
     plt.show()
 
 
-def moving_average(t, n):
-    """Return the moving average series of a with kernel size n."""
-    ma = nn.AvgPool1d(n - 1, stride=1, padding=4)
-    return ma(t.unsqueeze(0).unsqueeze(0)).squeeze()
-
-
-def derivative(a, n):
-    """Return the first derivative of series a with kernel size n."""
-    return a - np.roll(a, n)
-
-
 def get_model_structure(model):
     """Return JSON serialized model structure."""
     # TODO: recurse model tree -- don't assume two layers

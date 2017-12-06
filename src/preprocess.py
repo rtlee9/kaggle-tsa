@@ -5,13 +5,59 @@ from os import path
 import json
 import tsahelper.tsahelper as tsa
 from tqdm import tqdm
+
 import torch
 from torch import nn
 from torch.autograd import Variable
+from torch.utils.data import Dataset, DataLoader
 
-from .config import path_a3d, path_cache, verbose, path_plots, path_logs
+from .config import path_a3d, path_cache, verbose, path_logs
 from .constants import IMAGE_DIM
-from .utils import save_image, get_labels, moving_average
+from .utils import get_labels
+
+
+class A3DScans(Dataset):
+    """A3d scans data."""
+
+    def __init__(self, labels=None, keep_label_idx=None, blacklist=None, transforms=None):
+        """Initialize dataset with optional filters."""
+        if labels is None:
+            labels = get_labels()
+        if keep_label_idx is not None:
+            labels = labels[labels.subject_id.isin(keep_label_idx)]
+        if blacklist is not None:
+            labels = labels[~labels.subject_id.isin(blacklist)]
+
+        # map to common zone (across left-right center) and filter
+        self.subject_ids = labels.subject_id.unique()
+        self.transforms = transforms
+
+    def __len__(self):
+        """Get length of dataset."""
+        return len(self.subject_ids)
+
+    def __getitem__(self, idx):
+        """Get data element at index `idx`."""
+        # parse idx
+        subject_id = self.subject_ids[idx]
+        image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
+        # image = np.load(path.join(path_cache, subject_id + '.npy'))
+
+        if self.transforms:
+            image = self.transforms(image)
+
+        return dict(image=image, subject_id=subject_id)
+
+
+def moving_average(t, n):
+    """Return the moving average series of a with kernel size n."""
+    ma = nn.AvgPool1d(n - 1, stride=1, padding=4)
+    return ma(t.unsqueeze(1)).squeeze()
+
+
+def derivative(a, n):
+    """Return the first derivative of series a with kernel size n."""
+    return a - np.roll(a, n)
 
 
 def find_edges(a, buffer=0, plot_distr=False):
@@ -19,15 +65,12 @@ def find_edges(a, buffer=0, plot_distr=False):
     ma = moving_average(a, 10)
     f = ma > 10000
 
-    _, lower = torch.max(f, 0)
-    _, upper = torch.max(reverse_tensor(f), 0)
-    lower = lower.data[0]
-    upper = f.size(0) - upper.data[0]
-    if f.data[0]:
-        lower = 0
-    if f.data[-1]:
-        upper = f.size(0)
-    return max(lower - buffer, 0), min(upper + buffer, f.size(0))
+    _, lower = torch.max(f, 1)
+    _, upper = torch.max(reverse_tensor(f), 1)
+
+    lower = lower.clamp(min=0, max=f.size(1))
+    upper = f.size(1) - upper.clamp(min=0, max=f.size(1)).type(torch.cuda.FloatTensor)
+    return lower, upper
 
 
 def reverse_tensor(t):
@@ -41,23 +84,23 @@ def crop_image(image, buffer=0):
     """Find the edges of a TSA scan along each dimension and return the cropped image."""
     timg = rescale(Variable(image))
     avg_pool = nn.AvgPool3d(2, 1, )
-    convolved = avg_pool(timg.unsqueeze(0)) * 2 ** 3  # convert to sum pool
+    convolved = avg_pool(timg) * 2 ** 3  # convert to sum pool
     convolved = convolved.squeeze()
-    filtered = (convolved * (convolved > 250).type(torch.cuda.FloatTensor))
+    filtered = (convolved * (convolved > 250).type(torch.cuda.DoubleTensor))
 
-    s0 = filtered.sum(dim=1).sum(dim=1)
-    s1 = filtered.sum(dim=0).sum(dim=1)
-    s2 = filtered.sum(dim=0).sum(dim=0)
+    s0 = filtered.sum(dim=2).sum(dim=2)
+    s1 = filtered.sum(dim=1).sum(dim=2)
+    s2 = filtered.sum(dim=1).sum(dim=1)
 
     # borders for each dimension
     bottom, top = find_edges(s0, buffer)
     left, right = find_edges(s1, buffer)
     front, back = find_edges(s2, buffer)
 
-    resized_image = image[:top, left:right, front:back]
-    if verbose > 1:
-        print('Image resized from {} to {}'.format(image.shape, resized_image.shape))
-    return resized_image
+    return [
+        image[i, :int(t.data[0]), int(l.data[0]):int(r.data[0]), int(f.data[0]):int(b.data[0])]
+        for i, (t, l, r, f, b) in enumerate(zip(top, left, right, front, back))
+    ]
 
 
 def rescale(img):
@@ -72,13 +115,20 @@ def preprocess_tsa_data(type='labels'):
     """Preprocess all a3d files for training and persist to disk."""
     scans = get_labels(type)
     crop_log = {}
-    for subject_id in tqdm(scans.subject_id.unique()):
-        image = tsa.read_data(path.join(path_a3d, subject_id + '.a3d'))
-        image = image.transpose(2, 0, 1)  # axis are now height (top) x width (side) x  depth (front)
-        cropped_image = crop_image(torch.from_numpy(image).cuda(), buffer=5).cpu().numpy()
-        resized_image = resize(cropped_image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
-        np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
-        crop_log[subject_id] = cropped_image.shape
+    a3d_scans = A3DScans(labels=scans)
+    loader = DataLoader(
+        a3d_scans,
+        num_workers=4,
+        batch_size=2,
+        shuffle=True,
+    )
+    for batch in loader:
+        cropped_images = crop_image(batch['image'])
+        for cropped_image, subject_id in zip(cropped_images, batch['subject_id']):
+            image = cropped_image.cpu().numpy()
+            resized_image = resize(image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
+            np.save(path.join(path_cache, subject_id + '.npy'), resized_image)
+            crop_log[subject_id] = image.shape
 
     with open(path.join(path_logs, 'crop_log_{}.json'.format(type)), 'w') as f:
         json.dump(crop_log, f, indent=4)
