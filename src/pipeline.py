@@ -175,8 +175,8 @@ class MeanVariance(object):
     """Remove mean and variance."""
 
     def __call__(self, image):
-        """Remove mean and variance."""
-        return image / 255 - .5
+        """Rescale to range [-1, 1]."""
+        return (image - image.min()) / (image.max() - image.min()) * 2 - 1
 
 
 def get_data_loaders(threat_zone):
