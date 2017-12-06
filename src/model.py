@@ -21,11 +21,6 @@ class TsaNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
-            nn.Conv3d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm3d(64),
-            nn.ReLU(inplace=True),
-            nn.MaxPool3d(kernel_size=2, stride=2),
-
         )
 
         self.classifier = nn.Sequential(
