@@ -118,12 +118,12 @@ def preprocess_tsa_data(type='labels'):
     a3d_scans = A3DScans(labels=scans)
     loader = DataLoader(
         a3d_scans,
-        num_workers=4,
+        num_workers=2,
         batch_size=2,
         shuffle=True,
     )
     for batch in tqdm(loader):
-        cropped_images = crop_image(batch['image'])
+        cropped_images = crop_image(batch['image'].cuda())
         for cropped_image, subject_id in zip(cropped_images, batch['subject_id']):
             image = cropped_image.cpu().numpy()
             resized_image = resize(image, (IMAGE_DIM, IMAGE_DIM, IMAGE_DIM), mode='constant')
