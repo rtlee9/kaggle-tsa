@@ -22,13 +22,13 @@ def main(submission_name):
 
     # read model list
     with open(path.join(path_model, 'model_list.txt'), 'r') as f:
-        model_list = f.read()
+        model_list = f.read().split('\n')
+    model_list = [m for m in model_list if m != '']  # filter out blank lines
 
     for model_name in model_list:
 
         model_filename = path.join(path_model, model_name)
         threat_zone = int(model_name.split('tz')[1].split('_')[0])
-        print(threat_zone, model_name)
 
         # load model from disk
         model = TsaNet()
