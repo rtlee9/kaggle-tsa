@@ -187,8 +187,8 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), Filter(), ToTensor(), MeanVariance()]  # training transformations
-    test_transformations = [ZoneCrop(threat_zone), Resize(), Filter(), ToTensor(), MeanVariance()]  # base transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor(), MeanVariance()]  # training transformations
+    test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor(), MeanVariance()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
