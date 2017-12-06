@@ -27,7 +27,7 @@ def main(submission_name):
     for model_name in model_list:
 
         model_filename = path.join(path_model, model_name)
-        threat_zone = model_name.split('tz')[1].split('_')[0]
+        threat_zone = int(model_name.split('tz')[1].split('_')[0])
         print(threat_zone, model_name)
 
         # load model from disk
