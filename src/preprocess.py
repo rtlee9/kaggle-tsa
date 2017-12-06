@@ -122,7 +122,7 @@ def preprocess_tsa_data(type='labels'):
         batch_size=2,
         shuffle=True,
     )
-    for batch in loader:
+    for batch in tqdm(loader):
         cropped_images = crop_image(batch['image'])
         for cropped_image, subject_id in zip(cropped_images, batch['subject_id']):
             image = cropped_image.cpu().numpy()
