@@ -118,7 +118,7 @@ def preprocess_tsa_data(type='labels'):
     a3d_scans = A3DScans(labels=scans)
     loader = DataLoader(
         a3d_scans,
-        num_workers=2,
+        num_workers=4,
         batch_size=2,
         shuffle=True,
     )
