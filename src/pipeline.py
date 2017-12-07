@@ -18,7 +18,6 @@ from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
 from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO, N_WORKERS
 from .crop import hard_crop
-from .preprocess import crop_image
 
 
 def get_blacklist():
@@ -180,14 +179,6 @@ class MeanVariance(object):
         return (image - image.min()) / (image.max() - image.min()) * 2 - 1
 
 
-class ZoneCropper(object):
-    """Zone cropper transformer."""
-
-    def __call__(self, image):
-        """Return the cropped image tensor."""
-        return crop_image(image, buffer=5)
-
-
 def get_data_loaders(threat_zone):
     """Get train, validation, and submission loaders."""
     # create train / validation split
@@ -196,8 +187,8 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor(), ZoneCropper(), MeanVariance()]  # training transformations
-    test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor(), ZoneCropper(), MeanVariance()]  # base transformations
+    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor(), MeanVariance()]  # training transformations
+    test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor(), MeanVariance()]  # base transformations
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
