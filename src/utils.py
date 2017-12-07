@@ -5,7 +5,7 @@ from matplotlib import animation
 import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
-from torch import nn
+from scipy.ndimage import convolve
 
 from .config import path_labels, path_sample_submissions
 from .zones import left_right_map
@@ -101,6 +101,16 @@ def plot_line(np_array):
     """Plot a numpy array as a line."""
     pd.Series(np_array).plot.line()
     plt.show()
+
+
+def moving_average(a, n):
+    """Return the moving average series of a with kernel size n."""
+    return convolve(a, np.ones(n))
+
+
+def derivative(a, n):
+    """Return the first derivative of series a with kernel size n."""
+    return a - np.roll(a, n)
 
 
 def get_model_structure(model):
