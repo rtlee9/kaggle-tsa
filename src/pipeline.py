@@ -176,7 +176,9 @@ class MeanVariance(object):
 
     def __call__(self, image):
         """Rescale to range [-1, 1]."""
-        return (image - image.min()) / (image.max() - image.min()) * 2 - 1
+        min0 = image - image.min()
+        max1 = min0 / min0.max()
+        return max1 * 4 - 1
 
 
 def get_data_loaders(threat_zone):
