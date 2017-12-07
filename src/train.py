@@ -37,7 +37,7 @@ def main(threat_zone):
     threat_ratio = loader_train.dataset.labels.Probability.value_counts(normalize=True)[1]
     threat_ratio_val = loader_validation.dataset.labels.Probability.value_counts(normalize=True)[1]
 
-    model = TsaNet()
+    model = TsaNet(transfer=True)
     model.cuda()
     optimizer = optim.SGD(
         model.parameters(),

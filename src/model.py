@@ -43,10 +43,8 @@ class TsaNet(nn.Module):
         if transfer:
             vgg = models.vgg16(pretrained=True)
             w1_vgg = vgg.features[0].weight
-            w2_vgg = vgg.features[2].weight
             d = self.state_dict()
             d['features.0.weight'] = w1_vgg.unsqueeze(1).data
-            d['features.4.weight'] = w2_vgg.unsqueeze(1).data
             self.load_state_dict(d)
 
     def forward(self, x):
