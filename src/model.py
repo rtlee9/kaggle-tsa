@@ -41,11 +41,14 @@ class TsaNet(nn.Module):
 
         # transfer weights
         if transfer:
-            vgg = models.vgg16(pretrained=True)
-            w1_vgg = vgg.features[0].weight
-            d = self.state_dict()
-            d['features.0.weight'] = w1_vgg.unsqueeze(1).data
-            self.load_state_dict(d)
+            try:
+                vgg = models.vgg16(pretrained=True)
+                w1_vgg = vgg.features[0].weight
+                d = self.state_dict()
+                d['features.0.weight'] = w1_vgg.unsqueeze(1).data
+                self.load_state_dict(d)
+            except RuntimeError:
+                print('Incorrect dimensions for weight transfer')
 
     def forward(self, x):
         """Net forward pass."""
