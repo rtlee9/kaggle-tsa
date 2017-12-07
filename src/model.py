@@ -13,12 +13,12 @@ class TsaNet(nn.Module):
 
             nn.Conv3d(1, 64, kernel_size=3, stride=1, padding=2),
             nn.BatchNorm3d(64),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
             nn.Conv3d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm3d(64),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
         )
@@ -32,7 +32,7 @@ class TsaNet(nn.Module):
         # weight initialization
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
-                gain = nn.init.calculate_gain('relu')
+                gain = nn.init.calculate_gain('leaky_relu')
                 nn.init.xavier_normal(m.weight, gain=gain)
                 nn.init.constant(m.bias, 0.1)
             elif isinstance(m, nn.BatchNorm3d):
