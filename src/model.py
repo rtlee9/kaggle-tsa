@@ -9,15 +9,15 @@ class TsaNet(nn.Module):
     def __init__(self, num_classes=1, transfer=None):
         """Initialize TsaNet structure."""
         super(TsaNet, self).__init__()
-        self.features = nn.Sequential(  # initial torch.Size([1, 1, 32, 32, 32])
+        self.features = nn.Sequential(  # initial torch.Size([1, 1, 24, 24, 24])
 
             nn.Conv3d(1, 64, kernel_size=3, stride=1, padding=2),
             nn.BatchNorm3d(64),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
-            nn.Conv3d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm3d(64),
+            nn.Conv3d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm3d(128),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool3d(kernel_size=2, stride=2),
 
@@ -25,7 +25,7 @@ class TsaNet(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(64 * 8 ** 3, num_classes),
+            nn.Linear(128 * 6 ** 3, num_classes),
             nn.Sigmoid(),
         )
 

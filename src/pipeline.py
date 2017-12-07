@@ -12,12 +12,14 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
+import tsahelper.tsahelper as tsa
 
 from . import config
 from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
 from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO
 from .crop import hard_crop
+from .preprocess import crop_image
 
 
 def get_blacklist():
@@ -90,7 +92,7 @@ class Resize(object):
 
     def __call__(self, images):
         """Downsample image for modeling."""
-        return resize(images, (32, 32, 32), mode='constant')
+        return resize(images, (24, 24, 24), mode='constant')
 
 
 class Filter(object):
@@ -181,6 +183,14 @@ class MeanVariance(object):
         return max1 * 4 - 1
 
 
+class ZoneCropper(object):
+    """Zone cropper transformer."""
+
+    def __call__(self, image):
+        """Return the cropped image tensor."""
+        return crop_image(tsa.convert_to_grayscale(image), buffer=3)
+
+
 def get_data_loaders(threat_zone):
     """Get train, validation, and submission loaders."""
     # create train / validation split
@@ -189,8 +199,23 @@ def get_data_loaders(threat_zone):
 
     # create loader for training data
     blacklist = get_blacklist()
-    train_transformations = [ZoneCrop(threat_zone), ConditionalRandomFlip(threat_zone), Resize(), RandomRotation(), RandomShear(), ToTensor(), MeanVariance()]  # training transformations
-    test_transformations = [ZoneCrop(threat_zone), Resize(), ToTensor(), MeanVariance()]  # base transformations
+    train_transformations = [  # training transformations
+        ZoneCrop(threat_zone),
+        ZoneCropper(),
+        Resize(),
+        ConditionalRandomFlip(threat_zone),
+        RandomRotation(),
+        RandomShear(),
+        ToTensor(),
+        MeanVariance(),
+    ]
+    test_transformations = [  # base transformations
+        ZoneCrop(threat_zone),
+        ZoneCropper(),
+        Resize(),
+        ToTensor(),
+        MeanVariance(),
+    ]
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
