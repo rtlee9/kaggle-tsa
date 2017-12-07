@@ -61,6 +61,7 @@ def main(threat_zone):
     model.train()
     t0 = time.time()
     val_hist = []
+    loss_hist = []
     for epoch in range(constants.N_EPOCHS):
         epoch_loss = []
         for batch_num, data in enumerate(tqdm(loader_train)):
@@ -98,6 +99,7 @@ def main(threat_zone):
 
         # append current validation performance to history
         val_hist.append(bce_val)
+        loss_hist.append(sum(epoch_loss) / len(epoch_loss))
 
         print('Epoch {:2d} train / validation log loss [mean / min / max prediction]:\t{:.3f} / {:.3f}\t[{:.2f} / {:.2f} / {:.2f}]'.format(
             epoch,
@@ -116,6 +118,7 @@ def main(threat_zone):
         model,
         optimizer,
         val_hist,
+        loss_hist,
         specifications=dict(
             batch_size=constants.BATCH_SIZE,
             n_epochs=epoch + 1,
