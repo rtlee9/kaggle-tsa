@@ -1,7 +1,7 @@
 """Constant variables for TSA challenge."""
 
 # preprocessing constants
-TRAIN_TEST_SPLIT_RATIO = 0.03
+TRAIN_TEST_SPLIT_RATIO = 0.05
 IMAGE_DIM = 128
 CROP_LOG_INTERVAL = 20
 
