@@ -59,6 +59,17 @@ def get_labels(type='labels'):
     labels['zone_num'] = labels.Id.str.split('Zone').str[1].astype(int)
     labels['common_zone'] = labels.zone_num.map(
         lambda zone: left_right_map.get(zone, zone))
+
+    # override incorrect labels https://www.kaggle.com/c/passenger-screening-algorithm-challenge/discussion/37615
+    labels.loc[labels.Id == '623c761b4db398ea2157e6c5cd6c8c58_Zone3', 'Probability'] = 0
+    labels.loc[labels.Id == '623c761b4db398ea2157e6c5cd6c8c58_Zone5', 'Probability'] = 1
+    labels.loc[labels.Id == '623c761b4db398ea2157e6c5cd6c8c58_Zone11', 'Probability'] = 1
+    labels.loc[labels.Id == '623c761b4db398ea2157e6c5cd6c8c58_Zone16', 'Probability'] = 1
+    labels.loc[labels.Id == '496ec724cc1f2886aac5840cf890988a_Zone3', 'Probability'] = 1
+    labels.loc[labels.Id == '496ec724cc1f2886aac5840cf890988a_Zone5', 'Probability'] = 0
+    labels.loc[labels.Id == '496ec724cc1f2886aac5840cf890988a_Zone11', 'Probability'] = 0
+    labels.loc[labels.Id == '496ec724cc1f2886aac5840cf890988a_Zone16', 'Probability'] = 0
+
     return labels
 
 
