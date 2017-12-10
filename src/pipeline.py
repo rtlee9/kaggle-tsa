@@ -17,7 +17,7 @@ import tsahelper.tsahelper as tsa
 from . import config
 from .utils import get_labels
 from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
-from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO
+from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO, N_WORKERS
 from .crop import hard_crop
 from .preprocess import crop_image
 
@@ -222,7 +222,7 @@ def get_data_loaders(threat_zone):
     )
     loader_train = DataLoader(
         dataset_train,
-        num_workers=4,
+        num_workers=N_WORKERS,
         batch_size=BATCH_SIZE,
         shuffle=True,
     )
