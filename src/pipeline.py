@@ -198,7 +198,6 @@ def get_data_loaders(threat_zone):
     label_idx_train, label_idx_validation = train_test_split(subject_idx, test_size=TRAIN_TEST_SPLIT_RATIO, random_state=0)
 
     # create loader for training data
-    blacklist = get_blacklist()
     train_transformations = [  # training transformations
         ZoneCrop(threat_zone),
         ZoneCropper(),
@@ -219,7 +218,6 @@ def get_data_loaders(threat_zone):
     dataset_train = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_train,
-        blacklist=blacklist,
         transforms=transforms.Compose(train_transformations)
     )
     loader_train = DataLoader(
@@ -233,7 +231,6 @@ def get_data_loaders(threat_zone):
     dataset_validation = TsaScansDataset(
         threat_zone=threat_zone,
         keep_label_idx=label_idx_validation,
-        # blacklist=blacklist,
         transforms=transforms.Compose(test_transformations)
     )
     loader_validation = DataLoader(
