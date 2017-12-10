@@ -48,7 +48,8 @@ class TsaNet(nn.Module):
                 d = self.state_dict()
                 d['features.0.weight'] = w1_vgg.unsqueeze(1).data
                 self.load_state_dict(d)
-            except RuntimeError:
+            except RuntimeError as e:
+                print(e)
                 print('Incorrect dimensions for weight transfer')
 
     def forward(self, x, m):
