@@ -1,4 +1,5 @@
 """Utility functions for TSA challenge."""
+from os import path
 import tsahelper.tsahelper as tsa
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -7,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import convolve
 
-from .config import path_labels, path_sample_submissions
+from .config import path_labels, path_sample_submissions, path_aps
 from .zones import left_right_map
 
 plt.rc('animation', html='html5')
@@ -41,6 +42,13 @@ def animate_scan(image, fig_size=(8, 8)):
         return [im]
 
     return animation.FuncAnimation(fig, animate, frames=range(0, image.shape[2]), interval=200, blit=True)
+
+
+def animate_aps(subject_id):
+    """Animate aps file by subject ID."""
+    aps = tsa.read_data(path.join(path_aps, subject_id + '.aps'))
+    aps = aps.transpose(1, 0, 2)
+    return animate_scan(aps)
 
 
 def load_animate_scan(path, *args, **kwargs):
