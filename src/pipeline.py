@@ -58,22 +58,17 @@ class TsaScansDataset(Dataset):
         # map to common zone (across left-right center) and filter
         common_zone = left_right_map.get(threat_zone, threat_zone)
         labels = labels[labels.common_zone == common_zone]
-        self.center = threat_zone in center_zones
         self.labels = labels.set_index('subject_id')
         self.transforms = transforms
 
     def __len__(self):
         """Get length of dataset."""
-        if self.center:
-            return self.labels.shape[0] * 2  # center scan will have 50% prob of being flipped
-        else:
-            return self.labels.shape[0]  # each subject gets one scan per l/r half
+        return self.labels.shape[0] * 2  # 50% prob of being flipped
 
     def __getitem__(self, idx):
         """Get data element at index `idx`."""
         # parse idx
-        if self.center:
-            idx //= 2
+        idx //= 2
         data = self.labels.iloc[idx]
         subject_idx = data.name
         image = np.load(path.join(config.path_cache, subject_idx + '.npy'))
@@ -112,14 +107,9 @@ class Filter(object):
 class ConditionalRandomFlip(object):
     """ConditionalRandomFlip transformer."""
 
-    def __init__(self, threat_zone):
-        """Initialize ConditionalRandomFlip with threat zone."""
-        super().__init__()
-        self.threat_zone = threat_zone
-
     def __call__(self, image):
         """Randomply flip an image horizontally."""
-        if (self.threat_zone in center_zones) & (np.random.random() > .5):
+        if np.random.random() > .5:
             return np.fliplr(image)
         return image
 
@@ -208,7 +198,7 @@ def get_data_loaders(threat_zone):
         ZoneCrop(threat_zone),
         ZoneCropper(),
         Resize(),
-        ConditionalRandomFlip(threat_zone),
+        ConditionalRandomFlip(),
         RandomRotation(),
         RandomShear(),
         ToTensor(),
