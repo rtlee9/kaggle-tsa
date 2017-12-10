@@ -41,10 +41,11 @@ def main(submission_name):
 
         # collect predictions
         for data in loader_submission:
-            images, target, subject_idx, zone_nums = data['image'], data['threat'], data['id'], data['zone']
-            images, target = images.cuda(), target.cuda()
-            images, target = Variable(images), Variable(target)
-            output = model(images)
+            images, target, mirrors = data['image'], data['threat'], data['mirror']
+            images, target, mirrors = images.cuda(), target.cuda(), mirrors.cuda()
+            images, target, mirrors = Variable(images), Variable(target), Variable(mirrors)
+
+            output = model(images, mirrors)
             for subject_id, prediction, zone_num in zip(subject_idx, output, zone_nums):
                 id_ = '{}_Zone{}'.format(subject_id, zone_num)
                 submissions.loc[id_, 'prediction'] = prediction.cpu().data[0]
