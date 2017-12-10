@@ -58,16 +58,22 @@ class TsaScansDataset(Dataset):
         # map to common zone (across left-right center) and filter
         common_zone = left_right_map.get(threat_zone, threat_zone)
         labels = labels[labels.common_zone == common_zone]
+        self.center = threat_zone in center_zones
         self.labels = labels.set_index('subject_id')
         self.transforms = transforms
 
     def __len__(self):
         """Get length of dataset."""
-        return self.labels.shape[0]  # each subject gets one scan per l/r half
+        if self.center:
+            return self.labels.shape[0] * 2  # center scan will have 50% prob of being flipped
+        else:
+            return self.labels.shape[0]  # each subject gets one scan per l/r half
 
     def __getitem__(self, idx):
         """Get data element at index `idx`."""
         # parse idx
+        if self.center:
+            idx //= 2
         data = self.labels.iloc[idx]
         subject_idx = data.name
         image = np.load(path.join(config.path_cache, subject_idx + '.npy'))
