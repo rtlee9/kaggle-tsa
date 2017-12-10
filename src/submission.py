@@ -41,7 +41,7 @@ def main(submission_name):
 
         # collect predictions
         for data in loader_submission:
-            images, target, mirrors = data['image'], data['threat'], data['mirror']
+            images, target, mirrors, subject_idx, zone_nums = data['image'], data['threat'], data['mirror'], data['id'], data['zone']
             images, target, mirrors = images.cuda(), target.cuda(), mirrors.cuda()
             images, target, mirrors = Variable(images), Variable(target), Variable(mirrors)
 
