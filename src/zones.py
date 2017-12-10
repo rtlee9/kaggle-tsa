@@ -7,7 +7,7 @@ from .crop import crop_dims
 left_only_zones = [1, 2, 6, 8, 11, 13, 15]
 right_only_zones = [3, 4, 7, 10, 12, 14, 16]
 arm_zones = [3, 4, 7]  # don't flip left <--> right
-irreversible_zones = [16, 5, 17, 14, 12, 10, 7]  # don't flip front <--> back
+irreversible_zones = [16, 5, 17, 9, 3, 4, 14, 12, 10, 7]  # don't flip front <--> back
 unflippable_zones = [16, 5, 17, 9, 3, 4, 14, 12, 10, 7]  # don't flip top <--> bottom
 center_zones = [5, 9, 17]
 left_zones = left_only_zones + center_zones
