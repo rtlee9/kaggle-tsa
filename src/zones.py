@@ -6,9 +6,9 @@ from .crop import crop_dims
 # Note _left_ means _stage left_
 left_only_zones = [1, 2, 6, 8, 11, 13, 15]
 right_only_zones = [3, 4, 7, 10, 12, 14, 16]
-arm_zones = [3, 4, 7]
-irreversible_zones = [16, 5, 17]
-unflippable_zones = [16, 9]
+arm_zones = [3, 4, 7]  # don't flip left <--> right
+irreversible_zones = [16, 5, 17]  # don't flip front <--> back
+unflippable_zones = [16, 9, 3, 4]  # don't flip top <-- bottom
 center_zones = [5, 9, 17]
 left_zones = left_only_zones + center_zones
 right_zones = right_only_zones + center_zones
