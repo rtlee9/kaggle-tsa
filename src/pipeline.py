@@ -16,7 +16,7 @@ import tsahelper.tsahelper as tsa
 
 from . import config
 from .utils import get_labels
-from .zones import center_zones, left_only_zones, left_right_map, common_threat_body_map
+from .zones import arm_zones, left_only_zones, left_right_map, common_threat_body_map, irreversible_zones, unflippable_zones
 from .constants import BATCH_SIZE, TRAIN_TEST_SPLIT_RATIO, N_WORKERS
 from .crop import hard_crop
 from .preprocess import crop_image
@@ -111,10 +111,22 @@ class Filter(object):
 class ConditionalRandomFlip(object):
     """ConditionalRandomFlip transformer."""
 
+    def __init__(self, threat_zone):
+        """Initialize ConditionalRandomFlip with threat zone."""
+        super().__init__()
+        self.threat_zone = threat_zone
+
     def __call__(self, image):
-        """Randomply flip an image horizontally."""
-        if np.random.random() > .5:
-            return np.fliplr(image)
+        """Randomply flip an image based on its threat_zone."""
+        if self.threat_zone not in arm_zones:
+            if np.random.random() > .5:
+                image = np.fliplr(image)
+        if self.threat_zone not in irreversible_zones:
+            if np.random.random() > .5:
+                image = np.flip(image, 2)
+        if self.threat_zone not in unflippable_zones:
+            if np.random.random() > .5:
+                image = np.flipud(image)
         return image
 
 
@@ -202,7 +214,7 @@ def get_data_loaders(threat_zone):
         ZoneCrop(threat_zone),
         ZoneCropper(),
         Resize(),
-        ConditionalRandomFlip(),
+        ConditionalRandomFlip(threat_zone),
         RandomRotation(),
         RandomShear(),
         ToTensor(),
