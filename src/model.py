@@ -1,4 +1,5 @@
 """Convolutional neural net (TSA net)."""
+import torch
 import torch.nn as nn
 from torchvision import models
 
@@ -25,7 +26,7 @@ class TsaNet(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(128 * 6 ** 3, num_classes),
+            nn.Linear(2 * 128 * 6 ** 3, num_classes),
             nn.Sigmoid(),
         )
 
@@ -50,9 +51,11 @@ class TsaNet(nn.Module):
             except RuntimeError:
                 print('Incorrect dimensions for weight transfer')
 
-    def forward(self, x):
+    def forward(self, x, m):
         """Net forward pass."""
         x = self.features(x)
+        m = self.features(m)
+        x = torch.cat((x, x - m), 1)
         x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3) * x.size(4))
         x = self.classifier(x)
         return x.squeeze()

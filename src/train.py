@@ -65,13 +65,13 @@ def main(threat_zone):
     for epoch in range(constants.N_EPOCHS):
         epoch_loss = []
         for batch_num, data in enumerate(tqdm(loader_train)):
-            images, target = data['image'], data['threat']
-            images, target = images.cuda(), target.cuda()
-            images, target = Variable(images), Variable(target)
+            images, target, mirrors = data['image'], data['threat'], data['mirror']
+            images, target, mirrors = images.cuda(), target.cuda(), mirrors.cuda()
+            images, target, mirrors = Variable(images), Variable(target), Variable(mirrors)
 
             for step_num in range(3):
                 optimizer.zero_grad()
-                output = model(images)
+                output = model(images, mirrors)
                 loss = F.binary_cross_entropy(output, target.type(torch.cuda.FloatTensor))
                 loss.backward()
                 optimizer.step()
@@ -83,10 +83,10 @@ def main(threat_zone):
         bce_values = torch.cuda.FloatTensor()
         for validation_data in loader_validation:
             # load validation data into GPU memory
-            validation_images, validation_targets = validation_data['image'], validation_data['threat']
-            validation_images, validation_targets = validation_images.cuda(), validation_targets.cuda()
-            validation_images, validation_targets = Variable(validation_images), Variable(validation_targets)
-            output_val = model(validation_images)
+            validation_images, validation_targets, validation_mirrors = validation_data['image'], validation_data['threat'], validation_data['mirror']
+            validation_images, validation_targets, validation_mirrors = validation_images.cuda(), validation_targets.cuda(), validation_mirrors.cuda()
+            validation_images, validation_targets, validation_mirrors = Variable(validation_images), Variable(validation_targets), Variable(validation_mirrors)
+            output_val = model(validation_images, validation_mirrors)
             output_val = (output_val * threat_ratio_val / threat_ratio).clamp(max=1)  # adjust validation output to account for threat ratio mismatch
             bce_values = torch.cat((bce_values, F.binary_cross_entropy(output_val, validation_targets.type(torch.cuda.FloatTensor)).data))
         bce_val = bce_values.mean()

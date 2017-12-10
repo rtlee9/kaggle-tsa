@@ -76,11 +76,15 @@ class TsaScansDataset(Dataset):
         if data.zone_num in left_only_zones:
             image = np.fliplr(image)
 
+        mirror = np.fliplr(image)
+
         if self.transforms:
             image = self.transforms(image)
+            mirror = self.transforms(mirror)
 
         return dict(
             image=image,
+            mirror=mirror,
             threat=data.Probability,
             id=subject_idx,
             zone=data.zone_num,
