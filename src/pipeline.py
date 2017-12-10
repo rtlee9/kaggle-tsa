@@ -63,12 +63,11 @@ class TsaScansDataset(Dataset):
 
     def __len__(self):
         """Get length of dataset."""
-        return self.labels.shape[0] * 2  # 50% prob of being flipped
+        return self.labels.shape[0]
 
     def __getitem__(self, idx):
         """Get data element at index `idx`."""
         # parse idx
-        idx //= 2
         data = self.labels.iloc[idx]
         subject_idx = data.name
         image = np.load(path.join(config.path_cache, subject_idx + '.npy'))
