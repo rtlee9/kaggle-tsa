@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import convolve
 
-from .config import path_labels, path_sample_submissions, path_aps
+from .config import path_labels, path_sample_submissions, path_sample_submissions2, path_aps
 from .zones import left_right_map
 
 plt.rc('animation', html='html5')
@@ -61,6 +61,8 @@ def get_labels(type='labels'):
     """Read labels / submissions from disk, parse and return."""
     if type == 'submissions':
         labels = pd.read_csv(path_sample_submissions)
+    if type == 'submissions2':
+        labels = pd.read_csv(path_sample_submissions2)
     else:
         labels = pd.read_csv(path_labels)
     labels['subject_id'] = labels.Id.str.split('_').str[0]

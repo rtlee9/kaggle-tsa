@@ -7,7 +7,7 @@ import json
 import tsahelper.tsahelper as tsa
 from tqdm import tqdm
 
-from .config import path_a3d, path_cache, verbose, path_plots, path_logs
+from .config import path_a3d, path_cache, verbose, path_plots, path_logs, stage
 from .constants import IMAGE_DIM
 from .utils import save_image, get_labels, moving_average, plot_line
 
@@ -72,5 +72,8 @@ def preprocess_tsa_data(type='labels'):
 
 
 if __name__ == '__main__':
-    preprocess_tsa_data()
-    preprocess_tsa_data('submissions')
+    if stage == 1:
+        preprocess_tsa_data()
+        preprocess_tsa_data('submissions')
+    if stage == 2:
+        preprocess_tsa_data('submissions2')

@@ -10,14 +10,17 @@ from torch.autograd import Variable
 from .model import TsaNet
 from .utils import get_labels, get_priors, generate_submission
 from .pipeline import get_data_loaders
-from .config import path_model
+from .config import path_model, stage
 
 
 def main(submission_name):
     """Generate predictions and persist to disk."""
     # load data from disk
     zone_probs = get_priors()
-    submissions = get_labels('submissions')
+    if stage == 1:
+        submissions = get_labels('submissions')
+    if stage == 2:
+        submissions = get_labels('submissions2')
     submissions.set_index('Id', inplace=True)
     submissions['prediction'] = submissions.zone_num.map(lambda zone: zone_probs[zone])
 
